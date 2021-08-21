@@ -1,12 +1,36 @@
 %define CURRENT_ADDR cs:di
 
+; Prints a null terminated string of your choice.
+; Arguments:
+;     CS:DI - pointer to the string you want to print
+print:
+	pusha
+	mov ah, 0Eh ; teletype print
+.write2:
+	mov al, [CURRENT_ADDR] ; get current char and put it in al
+	cmp al, 0 ; check if al is null (string terminator)
+	je .done ; if it is, start a new line
+	int 10h ; otherwise write the char
+	inc di ; increment pointer to string
+	jmp .write2 ; jump back to this section
+.done:
+	mov al, 0Dh ; carriage return
+	int 10h
+	mov al, 0Ah ; line feed
+	int 10h
+	popa
+	ret ; return
+
+; Prints a word (16-bit value) in hex format.
+; Arguments:
+;     DX - word to print
 print_word:
 	pusha ; push all regs to stack
 	mov di, HEX_OUT+5 ; set destination index to last char in HEX_OUT
 	mov ax, dx ; copy argument to accumulator
 	and al, 00001111b ; extract the low nibble of the low half of the accumulator
 	call .compare ; fill in the string with correct value
-	dec di ; decrement destination index
+	dec di ; decrement string pointer
 	mov ax, dx ; copy argument to accumulator
 	and al, 11110000b ; extract high nibble of low half of accumulator
 	shr al, 4 ; shift high nibble to low nibble
@@ -20,24 +44,10 @@ print_word:
 	and al, 11110000b
 	shr al, 4
 	call .compare
-	jmp .write ; write string
-
-.write:
-	popa ; get back our arguments
-	mov dl, cl ; column
-	mov dh, ch ; row
-	pusha ; save registers
-	mov al, 1 ; update cursor
-	mov bh, 0 ; page number
-	mov bl, 00000111b ; colors
-	mov cx, 6 ; length of string
-	push cs ; push code segment address
-	pop es ; pop to extra segment address
-	mov bp, HEX_OUT ; offset to extra segment of string
-	mov ah, 13h ; write string
-	int 10h ; BIOS interrupt
+	mov di, HEX_OUT
+	call print ; write string
 	popa
-	ret ; return
+	ret
 
 .compare:
 	cmp al, 0 ; compare al with 0
@@ -118,4 +128,4 @@ print_word:
 	mov byte [CURRENT_ADDR], 'F'
 	ret
 
-HEX_OUT: db "0x0000"
+HEX_OUT: db "0x0000", 0
