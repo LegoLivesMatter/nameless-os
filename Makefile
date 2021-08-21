@@ -1,7 +1,7 @@
 AS = yasm # choose yasm or nasm here
 ASFLAGS = -f bin # compile a raw binary
 
-boot: boot.s print.s
+boot: boot.s print.s disk.s
 	$(AS) $(ASFLAGS) -o $@ boot.s
 
 clean:
