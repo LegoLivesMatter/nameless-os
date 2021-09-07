@@ -97,7 +97,7 @@ pmprint
 
 .loop
 	mov al, [ebx] ; read next char and put it in al
-	mov ah, 0Fh ; puts the VGA text mode color white on black into ah
+	mov ah, 00000111b ; puts the VGA text mode color white on black into ah
 
 	cmp al, 0 ; if the next character is null, we reached end of string
 	je .done ; so return the instruction
