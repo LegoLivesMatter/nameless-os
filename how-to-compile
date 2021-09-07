@@ -1,0 +1,10 @@
+1. Compile an i686-elf GCC and binutils following the instructions on this page:
+   https://wiki.osdev.org/GCC_Cross-Compiler
+
+2. Install yasm, or modify the makefile to use nasm if you prefer it
+
+3. Run make in the source root
+
+4. Run boot.img with some emulator, I use qemu:
+   qemu-system-i386 boot.img
+   You can use the x86_64 qemu, Bochs, VirtualBox or something else if you prefer
