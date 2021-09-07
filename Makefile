@@ -1,18 +1,26 @@
-AS = yasm # choose yasm or nasm here
-ASFLAGS = -f bin # compile a raw binary
+AS = yasm
+LD = i686-elf-ld
+CC = i686-elf-gcc
 
-boot: boot.s print.s
-	$(AS) $(ASFLAGS) -o $@ boot.s
+all: boot.img
+
+boot.img: boot kernel/kernel.bin
+	cat boot kernel/kernel.bin > $@
+	truncate -s1440K $@
+
+boot: boot.s
+	$(AS) -f bin boot.s -o $@
+
+kernel/kernel.bin: kernel/entry.o kernel/kernel.o
+	$(LD) -o $@ -Ttext 0x1000 kernel/entry.o kernel/kernel.o --oformat=binary
+
+kernel/entry.o: kernel/entry.s
+	$(AS) -f elf kernel/entry.s -o $@
+
+kernel/kernel.o: kernel/kernel.c
+	$(CC) -o $@ -ffreestanding -c kernel/kernel.c
 
 clean:
-	-rm boot
+	rm boot kernel/kernel.bin kernel/entry.o kernel/kernel.o boot.img
 
-run:
-	qemu-system-i386 boot
-
-help:
-	@echo "Run 'make' to compile."
-	@echo "Run 'make clean' to delete compiled objects."
-	@echo "Run 'make run' to run the compiled object. Must have qemu-system-i386 (but x86_64 should work too)."
-
-.PHONY = clean run help
+.PHONY: all clean

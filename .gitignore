@@ -1,2 +1,5 @@
 toolchain/
 boot
+boot.img
+kernel/kernel.bin
+kernel/*.o
