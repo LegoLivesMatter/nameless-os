@@ -20,10 +20,10 @@ kernel/entry.o: kernel/entry.s
 	$(AS) -f elf kernel/entry.s -o $@
 
 kernel/arch/x86/tty/tty.o: kernel/arch/x86/tty/tty.c
-	$(CC) -o $@ -ffreestanding -c kernel/arch/x86/tty/tty.c
+	$(CC) -g -o $@ -ffreestanding -c kernel/arch/x86/tty/tty.c
 
 kernel/kernel.o: kernel/kernel.c
-	$(CC) -o $@ -Iinclude/arch/x86 -ffreestanding -c kernel/kernel.c
+	$(CC) -g -o $@ -Iinclude/arch/x86 -ffreestanding -c kernel/kernel.c
 
 clean:
 	rm boot kernel/kernel.bin ${KERNEL_OBJ} boot.img
