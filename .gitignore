@@ -1,5 +1,4 @@
 toolchain/
-boot
 boot.img
 **/*.o
 **/*.bin
