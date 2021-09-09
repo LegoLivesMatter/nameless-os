@@ -3,3 +3,4 @@ boot
 boot.img
 **/*.o
 **/*.bin
+**/*.elf

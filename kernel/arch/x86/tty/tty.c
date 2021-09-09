@@ -34,7 +34,7 @@ void scroll_up(void)
 	cursor_y = VGA_HEIGHT - 1;
 }
 
-void kprint(char *string)
+void kprint(const char *string)
 {
 	char next_char;
 	next_char = *string;
