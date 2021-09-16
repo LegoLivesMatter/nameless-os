@@ -20,7 +20,7 @@ kernel/entry.o: kernel/entry.s
 	$(AS) -f elf kernel/entry.s -o $@
 
 kernel/arch/x86/tty/tty.o: kernel/arch/x86/tty/tty.c
-	$(CC) -g -o $@ -ffreestanding -c kernel/arch/x86/tty/tty.c
+	$(CC) -g -o $@ -Iinclude/arch/x86 -ffreestanding -c kernel/arch/x86/tty/tty.c
 
 kernel/kernel.o: kernel/kernel.c
 	$(CC) -g -o $@ -Iinclude/arch/x86 -ffreestanding -c kernel/kernel.c
@@ -29,6 +29,6 @@ kernel/kernel.elf: kernel/kernel.bin
 	$(LD) -o $@ -T kernel/linker.ld ${KERNEL_OBJ} --oformat=elf32-i386
 
 clean:
-	rm boot/x86/boot kernel/kernel.bin ${KERNEL_OBJ} boot.img
+	rm boot/x86/boot kernel/kernel.bin kernel/kernel.elf ${KERNEL_OBJ} boot.img
 
 .PHONY: all clean

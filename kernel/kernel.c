@@ -1,4 +1,6 @@
 #include <tty.h>
+#include <io.h>
+#include <stdint.h>
 
 const char *string = "Hello there!\n\n\
 Hopefully your machine manages to print this text.\n\
@@ -13,5 +15,25 @@ Feel free to mess around with the code, although I doubt it will be very interes
 void _start(void)
 {
 	screen_clear();
-	kprint(string);
+	/*kprint(string, 0x07);*/
+	kprint("Color 0x01\n", VGA_COLOR_BLUE);
+	kprint("Color 0x02\n", VGA_COLOR_GREEN);
+	kprint("Color 0x03\n", VGA_COLOR_TEAL);
+	kprint("Color 0x04\n", VGA_COLOR_DARK_RED);
+	kprint("Color 0x05\n", VGA_COLOR_MAGENTA);
+	kprint("Color 0x06\n", VGA_COLOR_BROWN);
+	kprint("Color 0x07\n", VGA_COLOR_LIGHT_GRAY);
+	kprint("Color 0x08\n", VGA_COLOR_DARK_GRAY);
+	kprint("Color 0x09\n", VGA_COLOR_PURPLE);
+	kprint("Color 0x0A\n", VGA_COLOR_LIME);
+	kprint("Color 0x0B\n", VGA_COLOR_CYAN);
+	kprint("Color 0x0C\n", VGA_COLOR_BRIGHT_RED);
+	kprint("Color 0x0D\n", VGA_COLOR_PINK);
+	kprint("Color 0x0E\n", VGA_COLOR_YELLOW);
+	kprint("Color 0x0F\n", VGA_COLOR_WHITE);
+	kprintb(0xAE);
+	kprint("\n", 0);
+	kprintw(0xDEAD);
+	kprint("\n", 0);
+	kprintd(0x89ABCDEF);
 }

@@ -1,5 +1,6 @@
 toolchain/
 boot.img
+boot/x86/boot
 **/*.o
 **/*.bin
 **/*.elf
