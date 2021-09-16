@@ -1,42 +1,45 @@
 ; Some routines for managing the A20 line
 
 ; Check if A20 is enabled
-; Based on <https://wiki.osdev.org/A20_Line#Testing_the_A20_line>, slightly modified
-check_a20
-	pushf ; save EFLAGS
-	; save segment and index registers
-	push ds 
+; Based on <https://wiki.osdev.org/A20_Line#Testing_the_A20_line>
+check_a20:
+	pushf
+	push ds
 	push es
 	push di
 	push si
 
-	cli ; disable interrupts
-	xor ax, ax ; ax = 0
-	mov es, ax ; es = 0
+	cli
 
-	not ax ; ax = FFFFh
-	mov ds, ax ; ds = FFFFh
+	xor ax, ax
+	mov es, ax
+
+	not ax
+	mov ds, ax
 
 	mov di, 500h
 	mov si, 510h
 
-	mov al, [es:di] ; preserve contents of 0:500h
-	mov ah, [ds:si] ; preserve contents of FFFFh:510h
-	push ax ; push all that to stack
+	mov al, byte [es:di]
+	push ax
 
-	mov byte [es:di], 0 ; set 0:500h to 0
-	mov byte [ds:si], 0FFh ; set FFFFh:510h to FFh
+	mov al, byte [ds:si]
+	push ax
 
-	cmp byte [es:di], 0FFh ; compare 0:500h with FFh
-					  ; if A20 is enabled, this will not be equal, but if A20 is disabled it will be
+	mov byte [es:di], 0
+	mov byte [ds:si], 0FFh
 
-	pop ax ; pop old contents of the 2 addresses
-	mov [ds:si], ah ; restore contents of FFFFh:510h
-	mov [es:di], al ; restore contents of 0:500h
+	cmp byte [es:di], 0FFh
 
-	xor ax, ax ; clear ax
-	je .exit ; if A20 is disabled, return 0
-	mov ax, 1 ; otherwise return 1
+	pop ax
+	mov byte [ds:si], al
+	
+	pop ax
+	mov byte [es:di], al
+
+	mov ax, 0
+	je .exit
+	mov ax, 1
 
 .exit
 	pop si
@@ -44,6 +47,67 @@ check_a20
 	pop es
 	pop ds
 	popf
-	sti
 	ret
 
+a20_i8042_wait
+	in al, 64h
+	test al, 2
+	jnz a20_i8042_wait
+	ret
+
+a20_i8042_wait2
+	in al, 64h
+	test al, 1
+	jnz a20_i8042_wait2
+	ret
+
+enable_a20
+	mov ax, 2401h
+	int 15h
+	call check_a20
+	cmp ax, 1
+	jne .fail
+.success
+	ret
+.fail
+	cli ; disable interrupts
+
+	call a20_i8042_wait
+	mov al, 0ADh ; disable 1st PS/2 port
+	out 64h, al
+
+	call a20_i8042_wait
+	mov al, 0D0h ; read controller output port
+	out 64h, al
+
+	call a20_i8042_wait2
+	in al, 60h ; do the actual read
+	push ax ; save the register
+
+	call a20_i8042_wait
+	mov al, 0D1h ; write byte to output port
+	out 64h, al
+
+	call a20_i8042_wait
+	pop ax ; restore the register
+	or al, 2 ; toggle A20 bit
+	out 60h, al
+
+	call a20_i8042_wait
+	mov al, 0AEh ; reenable 1st PS/2 port
+	out 64h, al
+
+	call a20_i8042_wait
+	sti ; enable interrupts
+	ret
+
+	call check_a20
+	cmp ax, 1
+	jne .fail2
+	ret
+.fail2
+	mov si, A20_FAIL
+	call print
+	jmp $
+
+A20_FAIL db "A20 enable fail, not booting!", 0

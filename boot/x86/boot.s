@@ -27,27 +27,34 @@ KERNEL_OFFSET equ 1000h ; where we will load our kernel
 	jc read_error ; halt if read fails
 	cmp al, 10 ; make sure we actually read 10 sectors
 	jl read_error ; halt if we didn't
-	jmp switch_to_pm ; if all is good, begin the switch to 32-bit protected mode
+
+	call check_a20
+	cmp ax, 1
+	jne a20_is_off
+
+a20_is_on
+	jmp switch_to_pm
+a20_is_off
+	call enable_a20
+	jmp switch_to_pm
 
 reset_error
 	mov bx, 0B800h
 	mov es, bx
 	mov byte [es:di], '1'
-	jmp halt
+	jmp $
 
 read_error
 	mov bx, 0B800h
 	mov es, bx
 	mov byte [es:di], '2'
-	jmp halt
-
-halt
 	jmp $
 
 %include "a20.s"
+%include "print.s"
 %include "protected.s"
 
-BOOT_DRIVE db 0 ; reserve a spot in RAM for our boot drive variable
+BOOT_DRIVE resb 1
 
 	times 510-($-$$) db 0
 	dw 0AA55h ; MBR signature

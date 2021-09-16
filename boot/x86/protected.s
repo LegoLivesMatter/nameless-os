@@ -37,10 +37,6 @@ protected
 	mov ebp, 090000h
 	mov esp, ebp
 
-	; print a string to let us know that we survived the switch
-	mov ebx, pm_success
-	call pmprint
-
 	; transfer control to the kernel
 	call KERNEL_OFFSET
 
@@ -70,7 +66,6 @@ pmprint
 	popa ; restore registers from stack
 	ret ; return
 
-pm_success db "Now in protected mode", 0
 video_memory equ 0B8000h
 
 ; the actual Global Descriptor Table

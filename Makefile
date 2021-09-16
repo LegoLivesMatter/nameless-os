@@ -10,7 +10,7 @@ boot.img: boot/x86/boot kernel/kernel.bin
 	cat boot/x86/boot kernel/kernel.bin > $@
 	truncate -s1440K $@
 
-boot/x86/boot: boot/x86/boot.s boot/x86/a20.s boot/x86/protected.s
+boot/x86/boot: boot/x86/boot.s boot/x86/a20.s boot/x86/protected.s boot/x86/print.s
 	$(AS) -f bin boot/x86/boot.s -o $@
 
 kernel/kernel.bin: ${KERNEL_OBJ}
