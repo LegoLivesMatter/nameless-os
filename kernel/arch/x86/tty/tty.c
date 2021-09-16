@@ -1,7 +1,7 @@
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-char *video_memory = (char *) 0xB8000; /* VGA VRAM starts at 0xB8000 */
+volatile char *video_memory = (char *) 0xB8000; /* VGA VRAM starts at 0xB8000 */
 
 static int cursor_x = 0;
 static int cursor_y = 0;
