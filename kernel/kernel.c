@@ -1,39 +1,31 @@
 #include <tty.h>
 #include <io.h>
+#include <irq/idt.h>
+#include <irq/i8259a.h>
 #include <stdint.h>
 
-const char *string = "Hello there!\n\n\
-Hopefully your machine manages to print this text.\n\
-If it did, that's great news because I managed to write a partial VGA driver.\n\n\
-Right now, the short-term roadmap is as follows:\n\n\
-* Complete the text-mode part of the VGA driver.\n\
-* Enable interrupts using the PIC.\n\
-* Write a driver for the Intel 8042 PS/2 controller so the OS can receive keystrokes.\n\
-* Once all that is done, it would be desirable to start the switch to userspace so the OS can actually be remotely usable.\n\n\
-Feel free to mess around with the code, although I doubt it will be very interesting at the moment.\n";
+extern void double_fault(struct abort_frame *frame);
+extern void keyb_handler(struct interrupt_frame *frame);
+struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
+struct idtr idtr __attribute__((aligned(0x10)));
 
 void _start(void)
 {
 	screen_clear();
-	/*kprint(string, 0x07);*/
-	kprint("Color 0x01\n", VGA_COLOR_BLUE);
-	kprint("Color 0x02\n", VGA_COLOR_GREEN);
-	kprint("Color 0x03\n", VGA_COLOR_TEAL);
-	kprint("Color 0x04\n", VGA_COLOR_DARK_RED);
-	kprint("Color 0x05\n", VGA_COLOR_MAGENTA);
-	kprint("Color 0x06\n", VGA_COLOR_BROWN);
-	kprint("Color 0x07\n", VGA_COLOR_LIGHT_GRAY);
-	kprint("Color 0x08\n", VGA_COLOR_DARK_GRAY);
-	kprint("Color 0x09\n", VGA_COLOR_PURPLE);
-	kprint("Color 0x0A\n", VGA_COLOR_LIME);
-	kprint("Color 0x0B\n", VGA_COLOR_CYAN);
-	kprint("Color 0x0C\n", VGA_COLOR_BRIGHT_RED);
-	kprint("Color 0x0D\n", VGA_COLOR_PINK);
-	kprint("Color 0x0E\n", VGA_COLOR_YELLOW);
-	kprint("Color 0x0F\n", VGA_COLOR_WHITE);
-	kprintb(0xAE);
+	kprint("Welcome to Nameless OS!\nRunning revision: ", 0);
+	kprint(GIT_COMMIT, 0);
 	kprint("\n", 0);
-	kprintw(0xDEAD);
-	kprint("\n", 0);
-	kprintd(0x89ABCDEF);
+	kprint("Preparing IDT...\n", 0);
+	idt_set_descriptor(idt, 0x8, 0x8, (uint32_t) double_fault, IDT_TRAP_GATE, 0x0);
+	idt_set_descriptor(idt, 0x21, 0x8, (uint32_t) keyb_handler, IDT_INTERRUPT_GATE, 0x0);
+	kprint("IDT prepared, loading...\n", 0);
+	populate_idtr(&idtr, idt);
+	load_idt(idtr);
+	kprint("IDT loaded, enabling interrupts...\n", 0);
+	pic_init(0x20, 0x28);
+	pic_mask_all();
+	pic_unmask(1);
+	asm volatile ("sti");
+	kprint("All done\n", 0);
+	while(1);
 }
