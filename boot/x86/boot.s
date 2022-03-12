@@ -15,7 +15,7 @@ KERNEL_OFFSET equ 1000h ; where we will load our kernel
 	jc reset_error ; halt if controller reset fails
 
 	mov ah, 2 ; instruct BIOS's interrupt 13h to read sectors
-	mov al, 10 ; load 10 sectors, might be excessive (for now) but it's still good to do so
+	mov al, 30 ; load 30 sectors, might be excessive (for now) but it's still good to do so
 	xor ch, ch ; read from 1st cylinder
 	mov cl, 2 ; start reading from 2nd sector, right after the boot sector
 	xor dh, dh ; read from 1st head
