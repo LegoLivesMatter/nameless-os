@@ -43,29 +43,6 @@ protected
 	; above call should not return in normal circumstances, but if it does hang forever
 	jmp $
 
-pmprint
-	pusha ; save registers to stack
-	mov edx, video_memory ; initialize dx with location of VRAM
-
-.loop
-	mov al, [ebx] ; read next char and put it in al
-	mov ah, 00000111b ; puts the VGA text mode color white on black into ah
-
-	cmp al, 0 ; if the next character is null, we reached end of string
-	je .done ; so return the instruction
-
-	mov [edx], al ; otherwise put the next character in the video memory
-	mov [edx+1], ah ; do the same for its color
-
-	inc ebx ; point to next character in string
-	add edx, 2 ; point to next character in VRAM
-
-	jmp .loop ; go back to the loop
-
-.done
-	popa ; restore registers from stack
-	ret ; return
-
 video_memory equ 0B8000h
 
 ; the actual Global Descriptor Table
