@@ -1,27 +1,21 @@
-; cs:si - pointer to ASCIIZ string
-print
+; ds:si - pointer to ASCIIZ string
+print:
+	pusha
 	pushf
-	push ax
-	push bx
-	push si
+	cld
 	xor bh, bh
 	mov ah, 0Eh
-
-.loop
-	mov al, [cs:si]
+.loop:
+	lodsb
 	cmp al, 0
 	je .done
 	int 10h
-	inc si
 	jmp .loop
-
-.done
+.done:
 	mov al, 0Dh
 	int 10h
 	mov al, 0Ah
 	int 10h
-	pop si
-	pop bx
-	pop ax
 	popf
+	popa
 	ret
