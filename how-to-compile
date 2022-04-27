@@ -1,10 +1,11 @@
 1. Compile an i686-elf GCC and binutils following the instructions on this page:
    https://wiki.osdev.org/GCC_Cross-Compiler
+   Or use some tool to automate it, like I use crossdev on my Gentoo machine.
 
 2. Install yasm, or modify the makefile to use nasm if you prefer it
 
 3. Run make in the source root
 
-4. Run boot.img with some emulator, I use qemu:
-   qemu-system-i386 boot.img
-   You can use the x86_64 qemu, Bochs, VirtualBox or something else if you prefer
+4. Run the OS:
+   make run
+   This will create a disk image (if needed) and run it. Assumes that sfdisk, mtools and dosfstools are installed.

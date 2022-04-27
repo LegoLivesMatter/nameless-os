@@ -1,6 +1,7 @@
-AS = yasm
-LD = i686-elf-ld
-CC = i686-elf-gcc
+export AS = yasm
+export LD = i686-elf-ld
+export CC = i686-elf-gcc
+QEMU = qemu-system-i386
 
 GIT_REV = $(shell git rev-parse --short HEAD)
 
@@ -8,14 +9,15 @@ CFLAGS = -std=gnu89 -g -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_RE
 
 KERNEL_OBJ = kernel/entry.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/sample_handler.o kernel/kernel.o
 
-all: boot.img kernel/kernel.elf
+default: kernel/kernel.elf
 
-boot.img: boot/x86/boot kernel/kernel.bin
-	cat boot/x86/boot kernel/kernel.bin > $@
-	truncate -s1440K $@
+all: default boot/x86/disk.img
 
-boot/x86/boot: boot/x86/boot.s boot/x86/a20.s boot/x86/protected.s boot/x86/print.s
-	$(AS) -f bin boot/x86/boot.s -o $@
+run: boot/x86/disk.img
+	$(QEMU) boot/x86/disk.img
+
+boot/x86/disk.img: boot/x86/mbr.s boot/x86/vbr-fat32.s boot/x86/loader.s boot/x86/disk.dump boot/x86/fat32.s boot/x86/fat32-structs.s
+	cd boot/x86 && $(MAKE) all
 
 kernel/kernel.bin: ${KERNEL_OBJ}
 	$(LD) -o $@ -T kernel/linker.ld ${KERNEL_OBJ}
@@ -38,6 +40,7 @@ kernel/kernel.elf: kernel/kernel.bin
 	$(LD) -o $@ -T kernel/linker.ld ${KERNEL_OBJ} --oformat=elf32-i386
 
 clean:
-	rm boot/x86/boot kernel/kernel.bin kernel/kernel.elf ${KERNEL_OBJ} boot.img
+	-rm kernel/kernel.bin kernel/kernel.elf ${KERNEL_OBJ}
+	cd boot/x86 && $(MAKE) clean
 
-.PHONY: all clean
+.PHONY: default all clean run

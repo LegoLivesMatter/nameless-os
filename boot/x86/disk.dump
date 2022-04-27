@@ -1,0 +1,7 @@
+label: dos
+label-id: 0xc0c03566
+device: disk.img
+unit: sectors
+sector-size: 512
+
+disk.img1 : start=        2048, size=      202752, type=b, bootable
