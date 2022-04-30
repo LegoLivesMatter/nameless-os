@@ -1,12 +1,20 @@
 ; FAT32 driver
-; BOOT_DRIVE, part_table_entry and bp must be set up by the code using this driver.
-; first_data_sec is to be set up by calling get_1st_data_sec.
+; BOOT_DRIVE, si and bp must be set up by the code using this driver.
+; (Specifically, si must be a pointer to the partition's partition
+; table entry and bp must be a pointer to the BPB.)
+; Before reading any cluster chains, callers must call get_1st_data_sec
+; and must be careful not to trash ecx after calling it.
 
 ; eax - start cluster number
 ; es:di - where to load the cluster chain
 ; NOTE: Cluster chain might be the root directory or a file.
 read_cluster_chain:
-	pusha
+	push eax
+	push ebx
+	push ecx
+	push edx
+	push es
+	push di
 .loop:
 	; get the first sector of the cluster to read
 	push eax
@@ -14,13 +22,15 @@ read_cluster_chain:
 	xor ebx, ebx
 	mov bl, BPB_SecPerClus
 	mul ebx
-	add eax, [first_data_sec]
+	add eax, ecx
 	mov ebx, eax
 	pop eax
 
 	; read the cluster
+	push cx
 	movzx cx, BPB_SecPerClus
 	call read_sectors
+	pop cx
 
 	; increment the load offset (and segment if needed)
 	push eax
@@ -36,22 +46,21 @@ read_cluster_chain:
 .get_next_cluster:
 	pop eax
 	; get FAT sector number and offset containing the next cluster number
-	xor edx, edx
-	mov ebx, 4
-	mul dword ebx
+	xor ebx, ebx
+	mov bl, 4 ; put 4 in EBX, doing this instead of "mov ebx, 4" saves us an entire byte
+	mul ebx
 	movzx ebx, word BPB_BytsPerSec
-	div dword ebx
+	div ebx
 	movzx ebx, word BPB_RsvdSecCnt
 	add eax, ebx
-	push bp
-	mov bp, [part_table_entry]
-	add eax, [bp+part_entry.lba_start]
-	pop bp
+	add eax, [si]
 	mov ebx, edx
 	; reminder for myself: EAX is FAT sector number, (E)BX is offset into FAT sector
 	
 	; load the FAT sector we're looking for
 
+	push cx
+	push di
 	push ebx ; offset
 	push es ; we want to read at 0:1000, not STAGE3_SEGMENT:1000
 	push eax ; desired LBA
@@ -65,15 +74,20 @@ read_cluster_chain:
 	; find the cluster we're looking for
 	pop es ; restore STAGE3_SEGMENT
 	pop ebx ; pop FAT offset back into EBX for cmp
-	cmp dword [di+bx], 0xffffff7
-	jge .done ; if cluster number is greater than or equal to the defective cluster value, we're done
-		  ; TODO: should this perhaps be changed so that equal makes it error out?
-	; otherwise, load the next sector number in eax and read again
 	mov eax, [di+bx]
-	jmp .loop
+	pop di
+	pop cx
+	cmp eax, 0xffffff7
+	jl .loop ; if cluster number is lower than the defective cluster value, we're not done
+		 ; TODO: perhaps check is it equal defective and error out in that case?
 .done:
 	; cleanup and return
-	popa
+	pop di
+	pop es
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
 	ret
 
 ; es:di - where to load the sector(s)
@@ -101,18 +115,17 @@ read_sectors:
 		hlt
 		jmp $-1
 
-; no arguments
+; ds:si - pointer to partition table entry
+; RETURN: ecx - first data sector
 get_1st_data_sec:
 	push eax
 	push ebx
-	xor eax, eax
 	movzx ax, BPB_NumFats 
 	mul dword BPB_FatSz32 ; space occupied by all FATs
 	movzx ebx, word BPB_RsvdSecCnt
 	add eax, ebx ; space occupied by the reserved area
-	mov bx, [part_table_entry]
-	add eax, [bx+part_entry.lba_start] ; space before the partition
-	mov [first_data_sec], eax
+	add eax, [si] ; space before the partition
+	mov ecx, eax
 	pop ebx
 	pop eax
 	ret
@@ -120,5 +133,3 @@ get_1st_data_sec:
 read_error: db "Read error", 0
 
 BOOT_DRIVE: db 0
-part_table_entry: dw 0
-first_data_sec: dd 0

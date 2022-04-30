@@ -24,7 +24,6 @@ real_start:
 
 	; we expect the boot drive to be in DL and our partition table entry in DS:SI
 	mov [BOOT_DRIVE], dl
-	mov [part_table_entry], si
 
 	; calculate the 1st sector of the data area
 	call get_1st_data_sec
@@ -37,7 +36,9 @@ real_start:
 	mov eax, BPB_RootClus
 	call read_cluster_chain
 
+	push cx
 	mov cx, 11
+	push si
 .find_stage_3:
 	mov si, STAGE3_NAME
 	cmp byte [es:di], 0 ; we have no more entries to look at
@@ -53,11 +54,14 @@ real_start:
 	add bx, 0x1000
 	mov es, bx
 .stage3_found:
-	sub di, 0xb ; "repe cmpsb" incremented this
+	pop si
+	pop cx
+	add di, 9 ; knowing that cmpsb incremented this by 11, we can also increment it by 9
+		       ; right here so we can use 1 less offset below
 	; stage 3 has been found and ES:DI points to its directory entry
-	mov ax, [es:di+dir_entry.firstclushi] ; load high half of the 1st cluster
+	mov ax, [es:di] ; load high half of the 1st cluster
 	shl eax, 16
-	mov ax, [es:di+dir_entry.firstcluslo] ; load low half of the 1st cluster
+	mov ax, [es:di+(dir_entry.firstcluslo-dir_entry.firstclushi)] ; load low half of the 1st cluster
 	mov bx, STAGE3_SEGMENT
 	mov es, bx
 	mov di, STAGE3_OFFSET
@@ -70,7 +74,6 @@ real_start:
 	mov si, stage3_missing
 	call print
 .halt:
-	cli
 	hlt
 	jmp short $-1
 

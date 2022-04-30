@@ -1,15 +1,6 @@
 ; FAT32 data structures
 ; Because they have to be defined before use
 
-struc part_entry
-	.attrib: resb 1
-	.chs_start: resb 3
-	.type: resb 1
-	.chs_end: resb 3
-	.lba_start: resd 1
-	.lba_end: resd 1
-endstruc
-
 struc dir_entry
 	.name: resb 11
 	.attr: resb 1

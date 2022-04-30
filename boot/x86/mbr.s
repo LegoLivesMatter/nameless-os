@@ -5,7 +5,7 @@ cpu 686
 org 0x600
 
 _start:
-	cli
+	cli ; we really don't want to be interrupted during relocation
 	; set up segment registers
 	xor ax, ax
 	mov ds, ax
@@ -27,55 +27,51 @@ real_start:
 	call check_int13_ext
 	mov byte [BOOT_DRIVE], dl
 	; look for active partition
-	mov bx, part_1
+	mov si, part_1
 	mov cx, 4
 	.check_part_loop:
-		mov al, [bx]
+		mov al, [si]
 		test al, 0x80
 		jnz .part_found
-		add bx, 16
+		add si, 16
 		loop .check_part_loop
 		.error:
 			mov si, no_os
 			call print
-			cli
 			hlt
 			jmp short $-1
 	.part_found:
 		; look for any other active partitions, if they exist the partition table is invalid
 		cmp cx, 0
 		je .load_vbr
-		push bx
+		push si 
 	.look_other_loop:
-		add bx, 16
-		mov al, [bx]
+		add si, 16
+		mov al, [si]
 		test al, 0x80
 		jnz .invalid_mbr
 		loop .look_other_loop
 	.load_vbr:
 		; load active partition's VBR
-		pop bx
+		pop si
 		mov ax, 0x7c0
-		mov edx, [bx+0x8]
-		push bx ; save pointer to partition table entry
+		add si, 8
+		mov edx, [si]
 		xor bx, bx
 		call read_sector
 		; check is the VBR bootable (ends with 0x55 0xaa), if not halt
 		cmp word [0x7dfe], 0xaa55
 		jne .not_bootable
 		mov dl, [BOOT_DRIVE]
-		pop si ; hand off partition table entry to VBR
-		jmp 0x7c00
+		call 0x7c00
 		.not_bootable:
 			mov si, no_os
 			call print
-			cli
 			hlt
 			jmp short $-1
 	.invalid_mbr:
 		mov si, invalid_mbr
 		call print
-		cli
 		hlt
 		jmp short $-1
 check_int13_ext:
@@ -92,7 +88,6 @@ check_int13_ext:
 	.no_ext:
 		mov si, no_int13_ext
 		call print
-		cli
 		hlt
 		jmp short $-1
 
@@ -119,7 +114,6 @@ read_sector:
 	.error:
 		mov si, read_fail
 		call print
-		cli
 		hlt
 		jmp short $-1
 
