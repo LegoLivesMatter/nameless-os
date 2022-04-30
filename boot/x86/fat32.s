@@ -10,11 +10,24 @@
 ; NOTE: Cluster chain might be the root directory or a file.
 read_cluster_chain:
 	push eax
+	push es
+	push di
+	.loop:
+		call read_cluster
+		cmp eax, 0xffffff7
+		jl .loop
+	pop di
+	pop es
+	pop eax
+	ret
+
+; eax - cluster number
+; es:di - where to load the cluster (incremented automatically)
+; RETURN: eax - next cluster number
+read_cluster:
 	push ebx
 	push ecx
 	push edx
-	push es
-	push di
 .loop:
 	; get the first sector of the cluster to read
 	push eax
@@ -58,8 +71,6 @@ read_cluster_chain:
 	; reminder for myself: EAX is FAT sector number, (E)BX is offset into FAT sector
 	
 	; load the FAT sector we're looking for
-
-	push cx
 	push di
 	push ebx ; offset
 	push es ; we want to read at 0:1000, not STAGE3_SEGMENT:1000
@@ -76,18 +87,10 @@ read_cluster_chain:
 	pop ebx ; pop FAT offset back into EBX for cmp
 	mov eax, [di+bx]
 	pop di
-	pop cx
-	cmp eax, 0xffffff7
-	jl .loop ; if cluster number is lower than the defective cluster value, we're not done
-		 ; TODO: perhaps check is it equal defective and error out in that case?
-.done:
 	; cleanup and return
-	pop di
-	pop es
 	pop edx
 	pop ecx
 	pop ebx
-	pop eax
 	ret
 
 ; es:di - where to load the sector(s)
