@@ -9,7 +9,12 @@ STAGE3_ADDRESS equ 0x8000
 STAGE3_SEGMENT equ STAGE3_ADDRESS >> 4
 STAGE3_OFFSET equ STAGE3_ADDRESS & 0xf
 
-%include "fat32-structs.s"
+%include "fat32/fat32-structs.s"
+
+%macro print 1
+	mov si, %1
+	call print_str
+%endmacro
 
 _start:
 	jmp short real_start
@@ -66,19 +71,21 @@ real_start:
 	mov es, bx
 	mov di, STAGE3_OFFSET
 	call read_cluster_chain ; read stage 3
-	mov ds, bx
-	call STAGE3_SEGMENT:STAGE3_OFFSET ; call stage 3
+	mov dl, [BOOT_DRIVE]
+	call STAGE3_ADDRESS ; call stage 3
 	jmp .halt ; halt in case we return, which should never happen
 
 .stage3_missing:
-	mov si, stage3_missing
-	call print
+	print stage3_missing
+	jmp .halt
+.error:
+	print read_error
 .halt:
 	hlt
 	jmp short $-1
 
 ; ds:si - string
-print:
+print_str:
 	pusha
 	mov ah, 0xe
 	xor bh, bh
@@ -96,7 +103,7 @@ print:
 	popa
 	ret
 
-%include "fat32.s"
+%include "fat32/fat32.s"
 
 stage3_missing: db "LOADER.BIN is missing", 0
 STAGE3_NAME: db "LOADER  BIN"
