@@ -1,6 +1,6 @@
 bits 16
 cpu 686
-org 0x8000
+org 0x1800
 
 %include "../fat32/fat32-structs.s"
 
@@ -22,7 +22,7 @@ _start:
 .a20_enabled:
 	print a20_enabled
 	call get_1st_data_sec
-	mov ax, 0x2000
+	mov ax, 0x1000
 	mov es, ax
 	mov eax, BPB_RootClus
 	xor di, di
@@ -88,7 +88,7 @@ read_clus_chain_unreal:
 	push es
 	push ax
 	xor di, di
-	mov ax, 0x100
+	mov ax, 0x1000
 	mov es, ax
 	pop ax
 	call read_cluster
@@ -99,7 +99,7 @@ read_clus_chain_unreal:
 	push eax
 	push ebx
 	push ecx
-	mov esi, 0x1000
+	mov esi, 0x10000
 	xor ebx, ebx
 	movzx eax, word BPB_BytsPerSec
 	movzx bx, byte BPB_SecPerClus

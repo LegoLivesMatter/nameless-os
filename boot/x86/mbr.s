@@ -11,7 +11,7 @@ _start:
 	mov ds, ax
 	mov es, ax
 	mov ss, ax
-	mov sp, 0x7c00 ; just under the soon-to-be-loaded VBR, should be more than sufficient space
+	mov sp, 0xfe00 ; just under the soon-to-be-loaded VBR, should be more than sufficient space
 
 	; perform self-relocation
 	cld
@@ -54,16 +54,16 @@ real_start:
 	.load_vbr:
 		; load active partition's VBR
 		pop si
-		mov ax, 0x7c0
+		mov ax, 0xfe0
 		add si, 8
 		mov edx, [si]
 		xor bx, bx
 		call read_sector
 		; check is the VBR bootable (ends with 0x55 0xaa), if not halt
-		cmp word [0x7dfe], 0xaa55
+		cmp word [0xfffe], 0xaa55
 		jne .not_bootable
 		mov dl, [BOOT_DRIVE]
-		call 0x7c00
+		call 0xfe00
 		.not_bootable:
 			mov si, no_os
 			call print

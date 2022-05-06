@@ -2,10 +2,10 @@
 ; This is what's going to be on most USB sticks and HDDs, for now
 
 bits 16
-org 0x7c00
+org 0xfe00
 cpu 686
 
-STAGE3_ADDRESS equ 0x8000
+STAGE3_ADDRESS equ 0x1800
 STAGE3_SEGMENT equ STAGE3_ADDRESS >> 4
 STAGE3_OFFSET equ STAGE3_ADDRESS & 0xf
 
@@ -25,7 +25,7 @@ times 0x57 db 0 ; skip past BPB
 real_start:
 	sti
 	; no need to set up segments and stack again, because MBR did it for us
-	mov bp, 0x7c00
+	mov bp, 0xfe00
 
 	; we expect the boot drive to be in DL and our partition table entry in DS:SI
 	mov [BOOT_DRIVE], dl

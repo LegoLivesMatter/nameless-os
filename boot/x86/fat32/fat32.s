@@ -79,12 +79,12 @@ read_cluster:
 	; load the FAT sector we're looking for
 	push di
 	push ebx ; offset
-	push es ; we want to read at 0:1000, not STAGE3_SEGMENT:1000
+	push es ; we want to read at 0:800, not STAGE3_SEGMENT:800
 	push eax ; desired LBA
 	xor ax, ax
 	mov es, ax
 	pop ebx ; pop LBA into EBX
-	mov di, 0x6000
+	mov di, 0x800
 	mov cx, 1
 	call read_sectors
 	cmp dl, 0
