@@ -4,3 +4,4 @@ boot/x86/boot
 **/*.o
 **/*.bin
 **/*.elf
+**/*.dbg

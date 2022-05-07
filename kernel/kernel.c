@@ -9,7 +9,7 @@ extern void keyb_handler(struct interrupt_frame *frame);
 struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
 struct idtr idtr __attribute__((aligned(0x10)));
 
-void _start(void)
+void kmain(void)
 {
 	screen_clear();
 	kprint("Welcome to Nameless OS!\nRunning revision: ", 0);
