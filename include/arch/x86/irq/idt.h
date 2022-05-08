@@ -6,8 +6,8 @@
 #define IDT_VECTOR_COUNT 256 /* our IDT will have 256 vectors */
 #define IDT_DESCRIPTOR_SIZE 8 /* each IDT descriptor is 8 bytes long */
 
-#define IDT_TRAP_GATE 		0x1F
-#define IDT_INTERRUPT_GATE 	0x0E
+#define IDT_TRAP_GATE 		0xF
+#define IDT_INTERRUPT_GATE 	0xE
 
 struct idt_descriptor {
 	uint16_t offset_1; /* bits 0-15 of offset */

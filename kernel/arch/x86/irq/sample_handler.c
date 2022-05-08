@@ -25,9 +25,9 @@ void keyb_handler(struct interrupt_frame *frame)
 __attribute__((interrupt))
 void double_fault(struct abort_frame *frame)
 {
-	*(volatile char *) (0xb8000) = ":";
-	*(volatile char *) (0xb8002) = "(";
+	*(volatile uint32_t *) (0xb8000) = 0xcf28cf3a;
+halt:
 	asm volatile ("cli; hlt");
-	while(1);
+	goto halt;
 }
 
