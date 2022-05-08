@@ -1,0 +1,111 @@
+#!/bin/sh
+# Shell script to install Nameless to a disk.
+
+BINARIES=( boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN kernel/kernel.bin )
+
+check_binaries() {
+	for i in "${BINARIES[@]}"; do
+		if ! [ -e $i ]; then
+			echo $i does not exist, have you compiled Nameless?
+			exit 1
+		fi
+	done
+}
+
+install_blkdev() {
+	# Ask the user are they sure they want to install.
+	local prompt
+	echo About to install Nameless to real disk $target.
+	echo This will WIPE ALL DATA on $target, type YES if you want to continue.
+	read -r prompt
+	if [ $prompt != "YES" ]; then
+		echo -e "Aborting."
+		exit 1
+	fi
+
+	echo OK, installing Nameless to $target.
+	echo Creating partition table on $target...
+
+	# Create a partition table on the disk.
+	fdisk $target <<- END > /dev/null
+	o
+	n
+	p
+	1
+
+
+	a
+	t
+	0c
+	w
+	END
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	# Create a FAT32 filesystem on the disk.
+	echo Formatting $target...
+	mkfs.fat -F 32 "$target"1
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	# Write MBR and VBR to the disk.
+	# TODO: write VBR to the backup BPB as well?
+	echo Writing bootsectors to $target...
+	dd 'if=boot/x86/mbr' "of=$target" 'bs=440' 'count=1'
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	dd 'if=boot/x86/vbr-fat32' 'of='"$target"1 'bs=1' 'skip=90' 'seek=90'
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	# Mount the partition and copy stage3 and kernel to it.
+	echo Copying files to $target...
+	local mountpoint=$(mktemp -d)
+	mount "$target"1 $mountpoint
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	cp boot/x86/stage3/LOADER.BIN $mountpoint/LOADER.BIN
+	cp kernel/kernel.bin $mountpoint/KERNEL.BIN
+	if ! [ $? -eq 0 ]; then
+		echo An error occurred!
+		exit 1
+	fi
+	# Unmount the partition and flush write cache to make sure the OS
+	# binaries have actually been written to the disk.
+	echo Unmounting $target...
+	umount $mountpoint
+	rm -rf $mountpoint
+	echo Flushing cache...
+	sync
+	echo Nameless has been successfully installed to $target!
+	return
+}
+
+# Check if all the required tools are installed.
+[ -z $(command -v fdisk) ] && echo fdisk not found, is util-linux installed? && exit 127
+[ -z $(command -v mkfs.fat) ] && echo mkfs.fat not found, is dosfstools installed? && exit 127
+
+# Make sure that Nameless has been compiled.
+check_binaries
+
+# cd to the directory we're in.
+cd $(dirname $(realpath $0))
+
+# For convenience, list all connected disks.
+fdisk -l
+
+# Ask the user where to install.
+echo -n "Choose the disk you want to install to: "
+read -r target
+
+# If the target does not exist or is not a blkdev, exit.
+[ -b $target ] || echo $target does not exist or is not a block device! || exit 1
+install_blkdev
+exit 0
