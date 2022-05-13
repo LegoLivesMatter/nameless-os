@@ -2,7 +2,7 @@ export AS = yasm
 export CC = i686-elf-gcc
 QEMU = qemu-system-i386 -monitor stdio
 
-GIT_REV = $(shell git describe --long HEAD)
+export GIT_REV = $(shell git describe --long HEAD)
 
 CFLAGS = -std=gnu89 -g -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
 

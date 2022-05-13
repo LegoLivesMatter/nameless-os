@@ -14,7 +14,7 @@ org 0x1800
 _start:
 	mov [BOOT_DRIVE], dl
 	call enable_unreal
-	print string
+	print begin
 	call check_a20
 	jc .a20_enabled
 	call enable_a20
@@ -60,7 +60,9 @@ _start:
 	mov ax, [es:di+(dir_entry.firstcluslo)]
 	call print_dword
 	mov edi, 0x100000
+	print kernel_loading
 	call read_clus_chain_unreal ; load kernel
+	print kernel_loaded
 	
 	cli
 	lgdt [gdt]
@@ -163,11 +165,13 @@ bits 32
 	jmp $-1
 
 kernel_name: db "KERNEL  BIN"
-string: db "Hello from LOADER.BIN!", 0xd, 0xa, 0
-a20_enabled: db "A20 is enabled", 0xd, 0xa, 0
+begin: db "Nameless Bootloader revision ", GIT_REVISION, 0xd, 0xa, 0
+a20_enabled: db "A20 has been enabled", 0xd, 0xa, "Searching for kernel...", 0xd, 0xa, 0
 a20_fail: db "Failed to enable A20, giving up!", 0xd, 0xa, 0
 crit_err: db "A critical error occurred, dumping registers now: ", 0xd, 0xa, 0
 kernel_found: db "Found kernel at cluster ", 0
+kernel_loading: db 0xd, 0xa, "Loading kernel...", 0xd, 0xa, 0
+kernel_loaded: db "Kernel successfully loaded.", 0xd, 0xa, "Setting up kernel environment and running kernel...", 0xd, 0xa, 0
 missing_kernel: db "Could not find KERNEL.BIN", 0xd, 0xa, 0
 eax_s: db "EAX: ", 0
 ebx_s: db "EBX: ", 0
