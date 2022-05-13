@@ -85,7 +85,6 @@ int ps2_initialize()
 
 	int dev_1_test, dev_2_test;
 
-/*
 	if (port_1_test) {
 		uint8_t resp;
 		
@@ -106,17 +105,20 @@ int ps2_initialize()
 		} else { dev_1_test = 1; kprint("ps2: Port 1 device test successful\n", 0); }
 	}
 
-	if (port_2_test) {
-		int resp = RESEND;
+	inb(PS2_DATA_PORT);
+	ps2_input_wait();
 
-		while (resp == RESEND) {
+	if (port_2_test) {
+		uint8_t resp;
+
+		do {
 			ps2_input_wait();
 			outb(PS2_CMD_STS_PORT, PS2_CMD_PORT_2_WRITE);
 			ps2_input_wait();
 			outb(PS2_DATA_PORT, PS2_DEV_RESET);
 			ps2_output_wait();
 			resp = inb(PS2_DATA_PORT);
-		}
+		} while (resp == RESEND);
 
 		if (resp == SELF_TEST_BAD || resp == SELF_TEST_BAD_2) {
 			dev_2_test = 0;
@@ -125,10 +127,11 @@ int ps2_initialize()
 				kprint("ps2: No functioning devices, exiting!\n", 0);
 				return -1;
 			}
-		} else { dev_2_test = 1; kprint("ps2: Port 2 test successful\n", 0); }
+		} else { dev_2_test = 1; kprint("ps2: Port 2 device test successful\n", 0); }
 	}
-*/
 
+	inb(PS2_DATA_PORT);
+	inb(PS2_DATA_PORT);
 	ps2_input_wait();
 	outb(PS2_CMD_STS_PORT, PS2_CMD_READ_CCB);
 	ps2_output_wait();
