@@ -137,3 +137,38 @@ void kprintd(uint32_t dword)
 	temp = dword & 0xF;
 	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
 }
+
+int kprintdec(uint32_t num)
+{
+	char buffer[11];
+	int digits = 10;
+	/* TODO: make an actual memset function to use instead of this */
+	for (int i=0; i<11; i++) {
+		buffer[i] = 0;
+	}
+
+	/* put the numbers in the buffer */
+	for (int i=9; i>0 && num>0; i--) {
+		uint8_t currdigit = num%10;
+		buffer[i] = currdigit+'0';
+		num /= 10;
+	}
+
+	/* shift the array as much as needed */
+	while (*buffer == '\0') {
+		digits--;
+		for (int i=0; i<9; i++) {
+			buffer[i] = buffer[i+1];
+		}
+	}
+
+	/* zero out any leftovers */
+	if (digits < 10) {
+		for (int i=digits; i<10; i++) {
+			buffer[i] = '\0';
+		}
+	}
+
+	kprint(buffer, 0);
+	return digits;
+}
