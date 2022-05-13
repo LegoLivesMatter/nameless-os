@@ -14,11 +14,13 @@ org 0x1800
 _start:
 	mov [BOOT_DRIVE], dl
 	call enable_unreal
+	print string
 	call check_a20
 	jc .a20_enabled
 	call enable_a20
 	jnc .a20_enable_fail
 .a20_enabled:
+	print a20_enabled
 	call get_1st_data_sec
 	mov ax, 0x1000
 	mov es, ax
@@ -52,9 +54,11 @@ _start:
 .kernel_found:
 	pop si
 	pop cx
+	print kernel_found
 	mov ax, [es:di+dir_entry.firstclushi]
 	shl eax, 16
 	mov ax, [es:di+(dir_entry.firstcluslo)]
+	call print_dword
 	mov edi, 0x100000
 	call read_clus_chain_unreal ; load kernel
 	
@@ -159,8 +163,11 @@ bits 32
 	jmp $-1
 
 kernel_name: db "KERNEL  BIN"
+string: db "Hello from LOADER.BIN!", 0xd, 0xa, 0
+a20_enabled: db "A20 is enabled", 0xd, 0xa, 0
 a20_fail: db "Failed to enable A20, giving up!", 0xd, 0xa, 0
 crit_err: db "A critical error occurred, dumping registers now: ", 0xd, 0xa, 0
+kernel_found: db "Found kernel at cluster ", 0
 missing_kernel: db "Could not find KERNEL.BIN", 0xd, 0xa, 0
 eax_s: db "EAX: ", 0
 ebx_s: db "EBX: ", 0
