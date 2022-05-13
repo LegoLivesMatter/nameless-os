@@ -4,9 +4,10 @@ QEMU = qemu-system-i386 -monitor stdio
 
 export GIT_REV = $(shell git describe --long HEAD)
 
-CFLAGS = -std=gnu89 -g -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
+CFLAGS = -g -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
 
-KERNEL_OBJ = kernel/entry.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/sample_handler.o kernel/kernel.o
+KERNEL_OBJ = kernel/entry.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/sample_handler.o kernel/arch/x86/mm/paging.o kernel/kernel.o
+
 BOOTLOADER_OBJ = boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN
 
 default: kernel/kernel.elf bootloader
