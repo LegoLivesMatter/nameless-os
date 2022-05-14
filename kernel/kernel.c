@@ -2,21 +2,25 @@
 #include <io.h>
 #include <irq/idt.h>
 #include <irq/i8259a.h>
+#include <time/i8254.h>
 #include <stdint.h>
 
 extern void double_fault(struct abort_frame *frame);
 extern void keyb_handler(struct interrupt_frame *frame);
+extern void timer_tick(struct interrupt_frame *frame);
 struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
 struct idtr idtr __attribute__((aligned(0x10)));
 
 void kmain(void)
 {
+	ticks = 0;
 	screen_clear();
 	kprint("Welcome to Nameless OS!\nRunning revision: ", 0);
 	kprint(GIT_COMMIT, 0);
 	kprint("\n", 0);
 	kprint("Preparing IDT...\n", 0);
 	idt_set_descriptor(idt, 0x8, 0x8, (uint32_t) double_fault, IDT_TRAP_GATE, 0x0);
+	idt_set_descriptor(idt, 0x20, 0x8, (uint32_t) timer_tick, IDT_INTERRUPT_GATE, 0x0);
 	idt_set_descriptor(idt, 0x21, 0x8, (uint32_t) keyb_handler, IDT_INTERRUPT_GATE, 0x0);
 	kprint("IDT prepared, loading...\n", 0);
 	populate_idtr(&idtr, idt);
@@ -26,10 +30,9 @@ void kmain(void)
 	pic_mask_all();
 	pic_unmask(1);
 	asm volatile ("sti");
+	kprint("Setting up timer...\n", 0);
+	i8254_configure_channel(0, SQUARE_WAVE_GENERATOR, 0);
+	i8254_irq_enable();
 	kprint("All done\n", 0);
-	kprintdec(12345);
-	kprintc('\n');
-	kprintdec(6789);
-	kprintc('\n');
 	while(1);
 }

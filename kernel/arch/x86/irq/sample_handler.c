@@ -2,6 +2,9 @@
 #include <irq/i8259a.h>
 #include <io.h>
 #include <stdint.h>
+#include <time/i8254.h>
+
+unsigned int ticks = 0;
 
 typedef uint32_t uword_t;
 
@@ -31,3 +34,10 @@ halt:
 	goto halt;
 }
 
+
+__attribute__((interrupt))
+void timer_tick(struct interrupt_frame *frame)
+{
+	pic_send_eoi(0);
+	ticks++;
+}

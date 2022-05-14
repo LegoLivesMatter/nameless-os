@@ -1,6 +1,7 @@
 #include <io.h>
 #include <tty.h>
 #include <stdint.h>
+#include <time/i8254.h>
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -41,6 +42,14 @@ void scroll_up(void)
 }
 
 void kprint(const char *string, uint8_t color)
+{
+	kprintc('[', 0);
+	kprintdec(ticks / (1193182 / 65536));
+	kprints("] ", 0);
+	kprints(string, color);
+}
+
+void kprints(const char *string, uint8_t color)
 {
 	char next_char;
 	uint8_t vga_misc_output;
@@ -142,9 +151,16 @@ int kprintdec(uint32_t num)
 {
 	char buffer[11];
 	int digits = 10;
+
 	/* TODO: make an actual memset function to use instead of this */
 	for (int i=0; i<11; i++) {
 		buffer[i] = 0;
+	}
+
+	/* handle edge case */
+	if (num==0) {
+		*buffer = '0';
+		goto print;
 	}
 
 	/* put the numbers in the buffer */
@@ -169,6 +185,7 @@ int kprintdec(uint32_t num)
 		}
 	}
 
-	kprint(buffer, 0);
+print:
+	kprints(buffer, 0);
 	return digits;
 }
