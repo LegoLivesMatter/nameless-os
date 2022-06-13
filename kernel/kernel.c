@@ -1,18 +1,14 @@
 #include <tty.h>
 #include <io.h>
 #include <irq/idt.h>
+#include <irq/interrupt.h>
 #include <irq/i8259a.h>
 #include <stdint.h>
 #include <mm/paging.h>
 
-struct abort_frame;
-struct interrupt_frame;
-struct fault_frame;
-extern void double_fault(struct abort_frame *frame);
-extern void keyb_handler(struct interrupt_frame *frame);
-extern void pf_handler(struct fault_frame *frame);
-static struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
-static struct idtr idtr __attribute__((aligned(0x10)));
+struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
+struct idtr idtr __attribute__((aligned(0x10)));
+extern void (*_int_handler_table[48])(void);
 
 struct e820_map {
 	uint64_t base;
@@ -47,16 +43,15 @@ void kmain(struct e820_map *mmap, int mmap_size)
 	kprint("BIOS memory map:\n", 0);
 	print_e820(mmap, mmap_size);
 	kprint("Preparing IDT...\n", 0);
-	idt_set_descriptor(idt, 8, 0x8, (uint32_t) double_fault, IDT_INTERRUPT_GATE, 0x0);
-	idt_set_descriptor(idt, 14, 0x8, (uint32_t) pf_handler, IDT_INTERRUPT_GATE, 0x0);
-	idt_set_descriptor(idt, 33, 0x8, (uint32_t) keyb_handler, IDT_INTERRUPT_GATE, 0x0);
+	for (int i=0; i<48; i++) {
+		idt_set_descriptor(idt, i, 0x8, _int_handler_table[i], IDT_INTERRUPT_GATE, 0);
+	}
 	kprint("IDT prepared, loading...\n", 0);
 	populate_idtr(&idtr, idt);
 	load_idt(idtr);
-	kprint("IDT loaded, enabling interrupts...\n", 0);
+	kprint("Setting up interrupts...\n", 0);
 	pic_init(0x20, 0x28);
 	pic_mask_all();
-	pic_unmask(1);
 	asm volatile ("sti");
 	kprint("All done\n", 0);
 	while(1);
