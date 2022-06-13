@@ -21,7 +21,7 @@ struct idtr {
 	uint32_t base; /* starting address of IDT */
 } __attribute__((packed));
 
-extern void idt_set_descriptor(struct idt_descriptor *idt, uint8_t vector, uint16_t segment, uint32_t offset, uint8_t type, uint8_t dpl);
+extern void idt_set_descriptor(struct idt_descriptor *idt, uint8_t vector, uint16_t segment, void (*offset)(void), uint8_t type, uint8_t dpl);
 extern inline void load_idt(struct idtr idtr);
 extern inline void populate_idtr(struct idtr *idtr, struct idt_descriptor *idt);
 
