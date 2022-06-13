@@ -2,11 +2,43 @@
 #include <io.h>
 #include <input/ps2.h>
 #include <bitflags.h>
+#include <irq/interrupt.h>
+
+static int was_released = 0, is_caps = 0;
+
+int ps2_keyb_handler()
+{
+	uint8_t scancode = inb(PS2_DATA_PORT);
+	if (was_released) {
+		was_released = 0;
+		return 0;
+	}
+
+	if (scancode == 0xf0) {
+		was_released = 1;
+		uint8_t scancode = inb(PS2_DATA_PORT);
+		if (scancode == 0x12) {
+			is_caps = 0;
+		}
+		return 0;
+	} else {
+		if (scancode == 0x12) {
+			is_caps = 1;
+			return 0;
+		}
+		if (!is_caps) {
+			kprintc(scancodes[scancode], 0);
+		} else {
+			kprintc(scancodes[scancode] - ('a'-'A'), 0);
+		}
+	}
+	return 0;
+}
 
 int ps2_initialize()
 {
 	uint8_t ccb, is_2channel, port_1_test, port_2_test;
-	
+
 	kprint("ps2: Begin initializing PS/2 controller\n", 0);
 	outb(PS2_CMD_STS_PORT, PS2_CMD_PORT_2_DISABLE);
 	ps2_input_wait();
@@ -21,7 +53,7 @@ int ps2_initialize()
 	CLEAR(ccb, 0);
 	CLEAR(ccb, 1);
 	CLEAR(ccb, 6);
-	
+
 	ps2_input_wait();
 	outb(PS2_CMD_STS_PORT, PS2_CMD_WRITE_CCB);
 	ps2_input_wait();
@@ -34,7 +66,7 @@ int ps2_initialize()
 		kprint("ps2: Controller self test failed, exiting!\n", 0);
 		return -1;
 	};
-	
+
 	ps2_input_wait();
 	outb(PS2_CMD_STS_PORT, PS2_CMD_PORT_2_ENABLE);
 	ps2_input_wait();
@@ -55,7 +87,7 @@ int ps2_initialize()
 	ps2_input_wait();
 	outb(PS2_CMD_STS_PORT, PS2_CMD_PORT_1_TEST);
 	ps2_output_wait();
-	
+
 	if (inb(PS2_DATA_PORT) != 0) {
 		port_1_test = 0;
 		kprint("ps2: Port 1 test failed!\n", 0);
@@ -87,7 +119,7 @@ int ps2_initialize()
 
 	if (port_1_test) {
 		uint8_t resp;
-		
+
 		do {
 			ps2_input_wait();
 			outb(PS2_DATA_PORT, PS2_DEV_RESET);
@@ -143,6 +175,8 @@ int ps2_initialize()
 	outb(PS2_CMD_STS_PORT, PS2_CMD_WRITE_CCB);
 	ps2_input_wait();
 	outb(PS2_DATA_PORT, ccb);
+
+	if (dev_1_test) register_interrupt(33, &ps2_keyb_handler);
 
 	if (dev_2_test && dev_1_test) return 1;
 	else return 0;

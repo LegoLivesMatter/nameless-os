@@ -1,3 +1,5 @@
+AS = yasm
+ASFLAGS = -f bin
 default: mbr vbr-fat32 stage3/LOADER.BIN
 
 mbr: mbr.s
