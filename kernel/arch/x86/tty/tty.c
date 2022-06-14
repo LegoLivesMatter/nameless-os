@@ -1,6 +1,7 @@
 #include <io.h>
 #include <tty.h>
 #include <stdint.h>
+#include <input/ps2.h>
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -11,6 +12,7 @@ static int cursor_x = 0; /* keep track of where cursor is */
 static int cursor_y = 0;
 
 char *hex_chars = "0123456789ABCDEF";
+char kgets_buffer[100];
 
 void screen_clear(void)
 {
@@ -74,6 +76,16 @@ void kprintc(const char character, uint8_t color)
 	uint16_t crtc_port;
 
 	if ( character == '\n') { cursor_x = 0; cursor_y++; }
+	if (character == 0x7f) {
+		cursor_x--;
+		if (cursor_x < 0) {
+			if (cursor_y > 0) {
+				cursor_x = VGA_WIDTH - 1;
+				cursor_y--;
+			} else cursor_x = 0;
+		}
+		video_memory[(cursor_y * VGA_WIDTH + cursor_x) * 2] = ' ';
+	}
 	else { video_memory[(cursor_y * VGA_WIDTH + cursor_x) * 2] = character; video_memory[((cursor_y * VGA_WIDTH + cursor_x++) * 2)+ 1] = color != 0 ? color : VGA_COLOR_LIGHT_GRAY; }
 	if ( cursor_x >= VGA_WIDTH ) { cursor_x = 0; cursor_y++; }
 	if ( cursor_y >= VGA_HEIGHT ) { scroll_up(); }
@@ -136,4 +148,30 @@ void kprintd(uint32_t dword)
 	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
 	temp = dword & 0xF;
 	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+}
+
+char *kgets()
+{
+	for (int i=0; i<100; i++) {
+		kgets_buffer[i] = '\0';
+	}
+
+	int i=0;
+	while (i<100) {
+		char temp = ps2_get_keystroke();
+		if (temp == '\n') break;
+		if (temp == 0x7f) {
+			if (i>0) {
+				i-=1;
+				kgets_buffer[i] = '\0';
+				kprintc(temp, 0);
+			}
+			continue;
+		}
+		kgets_buffer[i] = temp;
+		kprintc(temp, 0);
+		i++;
+	}
+
+	return kgets_buffer;
 }

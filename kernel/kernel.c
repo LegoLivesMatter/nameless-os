@@ -5,6 +5,7 @@
 #include <irq/interrupt.h>
 #include <irq/i8259a.h>
 #include <input/ps2.h>
+#include <stddef.h>
 
 struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
 struct idtr idtr __attribute__((aligned(0x10)));
@@ -82,5 +83,11 @@ void kmain(void)
 	}
 	asm volatile ("sti");
 	kprint("All done\n", 0);
-	while(1);
+
+	while(1) {
+		char *string = NULL;
+		string = kgets();
+		kprint(string, VGA_COLOR_LIME);
+		kprint("\n", 0);
+	}
 }

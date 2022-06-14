@@ -5,6 +5,7 @@
 #include <irq/interrupt.h>
 
 static int was_released = 0, is_caps = 0;
+static char buffer;
 
 int ps2_keyb_handler()
 {
@@ -27,12 +28,19 @@ int ps2_keyb_handler()
 			return 0;
 		}
 		if (!is_caps) {
-			kprintc(scancodes[scancode], 0);
+			buffer = scancodes[scancode];
 		} else {
-			kprintc(scancodes[scancode] - ('a'-'A'), 0);
+			buffer = scancodes[scancode] - ('a'-'A');
 		}
 	}
 	return 0;
+}
+
+char ps2_get_keystroke()
+{
+	buffer = 0;
+	while (!buffer);
+	return buffer;
 }
 
 int ps2_initialize()

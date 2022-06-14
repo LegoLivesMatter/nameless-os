@@ -82,11 +82,14 @@ static const char scancodes[] = {
 	[0x3a] = 'm',
 
 	/* special */
-	[0x29] = ' '
+	[0x29] = ' ',
+	[0x5a] = '\n',
+	[0x66] = 0x7f /* backspace */
 };
 
 extern int ps2_initialize();
 extern void ps2_input_wait();
 extern void ps2_output_wait();
+extern char ps2_get_keystroke();
 
 #endif
