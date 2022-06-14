@@ -34,6 +34,48 @@ void print_e820(struct e820_map *mmap, int mmap_size)
 	}
 }
 
+/* Small handler for double faults. Will be put elsewhere eventually. */
+int double_fault_handler(struct interrupt_frame *frame)
+{
+	kprint("PANIC: Double fault occurred!\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EAX: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->eax);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EBX: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->ebx);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("ECX: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->ecx);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EDX: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->edx);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EBP: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->ebp);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("ESP: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->esp);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("ESI: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->esi);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EDI: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->edi);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EIP: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->eip);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EFLAGS: ", VGA_COLOR_BRIGHT_RED);
+	kprintd(frame->eflags);
+	kprint("\n", VGA_COLOR_BRIGHT_RED);
+
+	/* IF has already been cleared for us */
+	asm("cli");
+halt:
+	asm("hlt");
+	goto halt;
+}
+
 void kmain(struct e820_map *mmap, int mmap_size)
 {
 	screen_clear();
@@ -50,6 +92,7 @@ void kmain(struct e820_map *mmap, int mmap_size)
 	populate_idtr(&idtr, idt);
 	load_idt(idtr);
 	kprint("Setting up interrupts...\n", 0);
+	register_interrupt(8, &double_fault_handler);
 	pic_init(0x20, 0x28);
 	pic_mask_all();
 	asm volatile ("sti");
