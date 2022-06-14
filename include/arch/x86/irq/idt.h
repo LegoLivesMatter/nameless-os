@@ -2,6 +2,7 @@
 #define X86_IDT_H
 
 #include <stdint.h>
+#include <irq/interrupt.h>
 
 #define IDT_VECTOR_COUNT 256 /* our IDT will have 256 vectors */
 #define IDT_DESCRIPTOR_SIZE 8 /* each IDT descriptor is 8 bytes long */
