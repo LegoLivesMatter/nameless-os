@@ -137,3 +137,41 @@ void kprintd(uint32_t dword)
 	temp = dword & 0xF;
 	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
 }
+
+void kprintq(uint64_t qword)
+{
+	uint8_t temp;
+	temp = qword >> 60;
+	kprint("0x", VGA_COLOR_LIGHT_GRAY);
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 56) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 52) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 48) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 44) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 40) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 36) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 32) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 28) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 24) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 20) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 16) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 12) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 8) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = (qword >> 4) & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+	temp = qword & 0xF;
+	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
+}
