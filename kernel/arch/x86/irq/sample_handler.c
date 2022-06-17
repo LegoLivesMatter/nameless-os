@@ -13,7 +13,7 @@ struct interrupt_frame {
 };
 
 struct fault_frame {
-	uint32_t error_code;
+	struct pf_errcode error_code;
 	uintptr_t eip;
 	uint16_t cs;
 	uint32_t eflags;
@@ -27,28 +27,33 @@ void keyb_handler(struct interrupt_frame *frame)
 	pic_send_eoi(1);
 	kprint("Got a keyboard interrupt!\n", 0);
 	inb(0x60);
+	int a = *(int *) (0xa0000000);
 }
 
 __attribute__((interrupt))
 void pf_handler(struct fault_frame *frame)
 {
-	struct pf_errcode *errcode = &(frame->error_code);
+	int address;
+	struct pf_errcode errcode = frame->error_code;
+	asm ("mov %%cr2, %0": "=a" (address));
 	kprint("A page fault occurred!\n", VGA_COLOR_DARK_RED);
-	if (errcode->p) {
-		kprint("Attempted to access non-present page\n", 0);
+	kprint("Faulting address: ", 0);
+	kprintd(address);
+	kprint("\n", 0);
+	if (!errcode.p) {
+		kprint("Address points to non-mapped page\n", 0);
 	}
-	if (errcode->wr) {
-		kprint("Kernel attempted to write to page\n", 0);
-	} else kprint("Kernel attempted to read from page\n", 0);
-	if (errcode->id) {
+	if (errcode.wr) {
+		kprint("Fault occurred while writing to memory\n", 0);
+	} else {
+		kprint("Fault occurred while reading from memory\n", 0);
+	}
+	if (errcode.id) {
 		kprint("Fault occurred while fetching instruction\n", 0);
 	}
-	int cr2;
-	asm ("mov %%cr2, %0": "=a" (cr2));
-	kprint("CR2: ", 0);
-	kprintd(cr2);
+	asm("cli");
 halt:
-	asm ("cli; hlt");
+	asm("hlt");
 	goto halt;
 }
 
