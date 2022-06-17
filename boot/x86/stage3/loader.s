@@ -160,7 +160,11 @@ bits 32
 	mov ss, ax
 	mov fs, ax
 	mov gs, ax
-	call 0x100000
+
+	call load_paging_structs
+	call enable_paging
+
+	call 0xc0000000
 	hlt
 	jmp $-1
 
@@ -186,3 +190,5 @@ ss_s: db "SS: ", 0
 space: db " ", 0
 hex_delm: db "0x", 0
 newline: db 0xd, 0xa, 0
+
+%include "paging.s"

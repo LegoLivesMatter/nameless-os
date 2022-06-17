@@ -3,16 +3,16 @@ OUTPUT_FORMAT(binary)
 
 SECTIONS
 {
-	. = 0x100000;
+	. = 0xc0000000;
 	__KERNEL_BASE__ = .;
 
-	.text : ALIGN(4K) {
+	.text : AT(ADDR(.text) - 0xbf000000) ALIGN(4K) {
 		__TEXT_BASE__ = .;
 		kernel/entry.o (.text)
 		*(.text)
 		__TEXT_END__ = .;
 	}
-	.rodata : ALIGN(4K) {
+	.rodata : AT(ADDR(.rodata) - 0xbf000000) ALIGN(4K) {
 		__RODATA_BASE__ = .;
 		*(.rodata)
 		__RODATA_END__ = .;
@@ -27,12 +27,12 @@ SECTIONS
 	 * matter yet because we (currently) assume that the NX bit is not
 	 * supported anyway. */
 
-	.data : ALIGN(4K) {
+	.data : AT(ADDR(.data) - 0xbf000000) ALIGN(4K) {
 		__DATA_BASE__ = .;
 		*(.data)
 		__DATA_END__ = .;
 	}
-	.bss : ALIGN(4K) {
+	.bss : AT(ADDR(.bss) - 0xbf000000) ALIGN(4K) {
 		__BSS_BASE__ = .;
 		*(.bss)
 		/* Reserving 16KiB for the stack. A __STACK_TOP__ is not really

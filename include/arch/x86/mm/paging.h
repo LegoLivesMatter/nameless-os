@@ -32,7 +32,4 @@ struct pf_errcode {
 	unsigned p: 1, wr: 1, us: 1, rsvd: 1, id: 1, pk: 1, ss: 1, hlat: 1, reserved: 7, sgx: 1, reserved2: 15;
 } __attribute__((packed));
 
-extern inline void slice_linear_addr(void *address, short *pde, short *pte, short *offset);
-extern inline void enable_paging();
-
 #endif
