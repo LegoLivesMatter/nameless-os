@@ -25,4 +25,5 @@ extern void kprint(const char *string, uint8_t color);
 extern void kprintb(const uint8_t byte);
 extern void kprintw(const uint16_t word);
 extern void kprintd(const uint32_t dword);
+extern void kprintq(const uint64_t qword);
 #endif

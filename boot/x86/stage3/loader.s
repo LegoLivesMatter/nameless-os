@@ -64,6 +64,8 @@ _start:
 	call read_clus_chain_unreal ; load kernel
 	print kernel_loaded
 	
+	call get_e820_map
+
 	cli
 	lgdt [gdt]
 	mov eax, cr0
@@ -151,6 +153,7 @@ memcpy:
 %include "../fat32/fat32.s"
 %include "gdt.s"
 %include "print.s"
+%include "e820.s"
 
 in_protected:
 bits 32
