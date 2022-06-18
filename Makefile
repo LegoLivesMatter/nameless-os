@@ -4,7 +4,7 @@ QEMU = qemu-system-i386 -monitor stdio
 
 export GIT_REV = $(shell git describe --long HEAD)
 
-CFLAGS = -g -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
+CFLAGS = -g -fgnu89-inline -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
 
 KERNEL_OBJ = kernel/entry.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/sample_handler.o kernel/kernel.o
 

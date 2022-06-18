@@ -167,9 +167,8 @@ bits 32
 	call load_paging_structs
 	call enable_paging
 
-	call 0xc0000000
-	hlt
-	jmp $-1
+	jmp 0x8:0xc0000000
+	nop
 
 kernel_name: db "KERNEL  BIN"
 begin: db "Nameless Bootloader revision ", GIT_REVISION, 0xd, 0xa, 0

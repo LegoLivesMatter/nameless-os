@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <mm/paging.h>
 
+struct abort_frame;
+struct interrupt_frame;
+struct fault_frame;
 extern void double_fault(struct abort_frame *frame);
 extern void keyb_handler(struct interrupt_frame *frame);
 extern void pf_handler(struct fault_frame *frame);
