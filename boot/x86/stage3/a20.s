@@ -1,3 +1,6 @@
+bits 16
+section .text
+
 %macro in_wait 0
 	push ax
 %%loop:

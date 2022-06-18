@@ -1,4 +1,7 @@
 ; Initial GDT for kernel, which wants a flat code and data descriptor
+
+section .rodata
+
 gdt:
 	dw .end-.start-1
 	dd .start

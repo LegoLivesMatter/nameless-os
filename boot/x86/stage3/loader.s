@@ -1,7 +1,7 @@
 bits 16
 cpu 686
-org 0x1800
 
+section .text
 %include "../fat32/fat32-structs.s"
 
 %macro print 1
@@ -11,7 +11,11 @@ org 0x1800
 	pop si
 %endmacro
 
+extern __STACK_BOTTOM__
+
+global _start
 _start:
+	mov sp, __STACK_BOTTOM__
 	mov [BOOT_DRIVE], dl
 	call enable_unreal
 	print begin
@@ -147,7 +151,6 @@ memcpy:
 	pop esi
 	ret
 
-
 %include "unreal.s"
 %include "a20.s"
 %include "../fat32/fat32.s"
@@ -155,8 +158,9 @@ memcpy:
 %include "print.s"
 %include "e820.s"
 
-in_protected:
 bits 32
+section .text
+in_protected:
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
@@ -169,6 +173,10 @@ bits 32
 
 	jmp 0x8:0xc0000000
 	nop
+
+%include "paging.s"
+
+section .rodata
 
 kernel_name: db "KERNEL  BIN"
 begin: db "Nameless Bootloader revision ", GIT_REVISION, 0xd, 0xa, 0
@@ -192,5 +200,3 @@ ss_s: db "SS: ", 0
 space: db " ", 0
 hex_delm: db "0x", 0
 newline: db 0xd, 0xa, 0
-
-%include "paging.s"

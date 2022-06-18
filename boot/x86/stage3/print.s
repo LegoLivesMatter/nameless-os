@@ -1,5 +1,8 @@
 ; Routines for printing
 
+bits 16
+section .text
+
 print_str:
 	push ax
 	push bx
