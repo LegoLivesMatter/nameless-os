@@ -72,8 +72,8 @@ real_start:
 	mov di, STAGE3_OFFSET
 	call read_cluster_chain ; read stage 3
 	mov dl, [BOOT_DRIVE]
-	call STAGE3_ADDRESS ; call stage 3
-	jmp .halt ; halt in case we return, which should never happen
+	jmp 0:STAGE3_ADDRESS ; call stage 3
+	nop
 
 .stage3_missing:
 	print stage3_missing
