@@ -1,6 +1,10 @@
 bits 16
 cpu 686
 
+extern enable_paging
+extern map_range
+extern set_up_page_directory
+
 section .text
 %include "../fat32/fat32-structs.s"
 
@@ -69,6 +73,11 @@ _start:
 	print kernel_loaded
 	
 	call get_e820_map
+	mov ebx, ecx
+	mov eax, 24
+	mul ecx
+	add eax, 20
+	sub sp, ax
 
 	cli
 	lgdt [gdt]
@@ -168,13 +177,43 @@ in_protected:
 	mov fs, ax
 	mov gs, ax
 
-	call load_paging_structs
+	push dword 0
+	push 0xc0003000
+	push 0xc0000000
+	push 0x103000
+	push 0x100000
+	call map_range
+	cmp eax, 0
+	jne .error
+	add esp, 20
+	push dword 2
+	push 0xc0009000
+	push 0xc0003000
+	push 0x109000
+	push 0x103000
+	call map_range
+	cmp eax, 0
+	jne .error
+	add esp, 20
+	push dword 2
+	push 0x100000
+	push dword 0
+	push 0x100000
+	push dword 0
+	call map_range
+	cmp eax, 0
+	jne .error
+	add esp, 20
+
+	call set_up_page_directory
 	call enable_paging
 
-	jmp 0x8:0xc0000000
+	jmp 0xc0000000
 	nop
-
-%include "paging.s"
+.error:
+	mov dword [0xb8000], 0xcf28cf3a
+	hlt
+	jmp $-1
 
 section .rodata
 

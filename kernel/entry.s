@@ -6,7 +6,7 @@ global _start
 _start:
 	mov ebp, __STACK_BOTTOM__
 	mov esp, ebp
-	push ecx
+	push ebx
 	push edi
 	call kmain
 	hlt

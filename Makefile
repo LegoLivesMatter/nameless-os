@@ -8,7 +8,7 @@ CFLAGS = -g -fgnu89-inline -Iinclude/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GI
 
 KERNEL_OBJ = kernel/entry.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/sample_handler.o kernel/kernel.o
 
-BOOTLOADER_OBJ = boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN
+BOOTLOADER_OBJ = boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN boot/x86/stage3/loader.elf
 
 default: kernel/kernel.elf bootloader
 
@@ -21,7 +21,8 @@ run: all
 
 boot/x86/mbr: boot/x86/mbr.s
 boot/x86/vbr-fat32: boot/x86/vbr-fat32.s boot/x86/fat32/*.s 
-boot/x86/stage3/LOADER.BIN: boot/x86/stage3/*.s boot/x86/fat32/*.s
+boot/x86/stage3/LOADER.BIN: boot/x86/stage3/*.s boot/x86/stage3/*.c boot/x86/fat32/*.s
+boot/x86/stage3/loader.elf: boot/x86/stage3/*.s boot/x86/stage3/*.c boot/x86/fat32/*.s
 $(BOOTLOADER_OBJ):
 	$(MAKE) -C boot/x86
 
