@@ -1,5 +1,5 @@
-#ifndef X86_TTY_H
-#define X86_TTY_H
+#ifndef TTY_H
+#define TTY_H
 
 #include <stdint.h>
 
