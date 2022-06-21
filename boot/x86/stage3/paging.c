@@ -1,12 +1,9 @@
 /* Code for enabling paging */
 
 #include <stdint.h>
+#include <paging.h>
 
-#define ADDRESS_NOT_ALIGNED 1
-#define INVL_ADDRESS 2
-#define ADDRESS_ALREADY_MAPPED 3
-#define ADDRESS_RANGE_MISMATCHED 4
-
+/* Preallocated page tables. */
 static uint32_t page_directory[1024] __attribute__((aligned(4096))) __attribute__((section(".data")));
 static uint32_t page_table_firstmb[1024] __attribute__((aligned(4096))) __attribute__((section(".data")));
 static uint32_t page_table_kernel[1024] __attribute__((aligned(4096))) __attribute__((section(".data")));

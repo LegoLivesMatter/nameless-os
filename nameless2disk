@@ -1,7 +1,7 @@
 #!/bin/sh
 # Shell script to install Nameless to a disk.
 
-BINARIES=( boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN kernel/kernel.bin )
+BINARIES=( boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN kernel/kernel.elf )
 
 check_binaries() {
 	for i in "${BINARIES[@]}"; do
@@ -72,7 +72,7 @@ install_blkdev() {
 		exit 1
 	fi
 	cp boot/x86/stage3/LOADER.BIN $mountpoint/LOADER.BIN
-	cp kernel/kernel.bin $mountpoint/KERNEL.BIN
+	cp kernel/kernel.elf $mountpoint/KERNEL.ELF
 	if ! [ $? -eq 0 ]; then
 		echo An error occurred!
 		exit 1

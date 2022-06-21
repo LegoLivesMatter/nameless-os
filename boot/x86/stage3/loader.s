@@ -1,9 +1,7 @@
 bits 16
 cpu 686
 
-extern enable_paging
-extern map_range
-extern set_up_page_directory
+extern run_kernel
 
 section .text
 %include "../fat32/fat32-structs.s"
@@ -63,9 +61,11 @@ _start:
 	pop si
 	pop cx
 	print kernel_found
+	mov eax, [es:di+dir_entry.filesize]
+	mov [KERNEL_SIZE], eax
 	mov ax, [es:di+dir_entry.firstclushi]
 	shl eax, 16
-	mov ax, [es:di+(dir_entry.firstcluslo)]
+	mov ax, [es:di+dir_entry.firstcluslo]
 	call print_dword
 	mov edi, 0x100000
 	print kernel_loading
@@ -177,47 +177,18 @@ in_protected:
 	mov fs, ax
 	mov gs, ax
 
-	push dword 0
-	push 0xc0003000
-	push 0xc0000000
-	push 0x103000
+	push dword [KERNEL_SIZE]
 	push 0x100000
-	call map_range
-	cmp eax, 0
-	jne .error
-	add esp, 20
-	push dword 2
-	push 0xc0009000
-	push 0xc0003000
-	push 0x109000
-	push 0x103000
-	call map_range
-	cmp eax, 0
-	jne .error
-	add esp, 20
-	push dword 2
-	push 0x100000
-	push dword 0
-	push 0x100000
-	push dword 0
-	call map_range
-	cmp eax, 0
-	jne .error
-	add esp, 20
+	push ebx
+	push edi
+	call run_kernel
 
-	call set_up_page_directory
-	call enable_paging
-
-	jmp 0xc0000000
-	nop
-.error:
-	mov dword [0xb8000], 0xcf28cf3a
-	hlt
-	jmp $-1
+section .bss
+KERNEL_SIZE: resd 1
 
 section .rodata
 
-kernel_name: db "KERNEL  BIN"
+kernel_name: db "KERNEL  ELF"
 begin: db "Nameless Bootloader revision ", GIT_REVISION, 0xd, 0xa, 0
 a20_enabled: db "A20 has been enabled", 0xd, 0xa, "Searching for kernel...", 0xd, 0xa, 0
 a20_fail: db "Failed to enable A20, giving up!", 0xd, 0xa, 0
@@ -225,7 +196,7 @@ crit_err: db "A critical error occurred, dumping registers now: ", 0xd, 0xa, 0
 kernel_found: db "Found kernel at cluster ", 0
 kernel_loading: db 0xd, 0xa, "Loading kernel...", 0xd, 0xa, 0
 kernel_loaded: db "Kernel successfully loaded.", 0xd, 0xa, "Setting up kernel environment and running kernel...", 0xd, 0xa, 0
-missing_kernel: db "Could not find KERNEL.BIN", 0xd, 0xa, 0
+missing_kernel: db "Could not find KERNEL.ELF", 0xd, 0xa, 0
 eax_s: db "EAX: ", 0
 ebx_s: db "EBX: ", 0
 ecx_s: db "ECX: ", 0
