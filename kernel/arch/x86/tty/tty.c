@@ -176,7 +176,7 @@ void kprintq(uint64_t qword)
 	kprintc(hex_chars[temp], VGA_COLOR_LIGHT_GRAY);
 }
 
-int kprintdec(uint32_t num)
+int kprintdec(uint32_t num, uint8_t color)
 {
 	char buffer[11];
 	int digits = 10;
@@ -207,6 +207,6 @@ int kprintdec(uint32_t num)
 		}
 	}
 
-	kprint(buffer, 0);
+	kprint(buffer, color);
 	return digits;
 }

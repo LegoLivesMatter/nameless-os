@@ -59,9 +59,5 @@ void kmain(struct e820_map *mmap, int mmap_size)
 	pic_unmask(1);
 	asm volatile ("sti");
 	kprint("All done\n", 0);
-	kprintdec(12345);
-	kprintc('\n');
-	kprintdec(6789);
-	kprintc('\n');
 	while(1);
 }
