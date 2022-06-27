@@ -210,5 +210,3 @@ ss_s: db "SS: ", 0
 space: db " ", 0
 hex_delm: db "0x", 0
 newline: db 0xd, 0xa, 0
-
-%include "paging.s"
