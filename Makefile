@@ -39,9 +39,6 @@ boot/x86/disk.img: boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN bo
 	mcopy -i boot/x86/disk.img@@1M boot/x86/stage3/LOADER.BIN ::.
 	mcopy -i boot/x86/disk.img@@1M kernel/kernel.elf ::./KERNEL.ELF
 
-kernel/arch/x86/irq/sample_handler.o: kernel/arch/x86/irq/sample_handler.c
-	$(CC) $(CFLAGS) -mgeneral-regs-only -c $< -o $@
-
 kernel/kernel.elf: $(KERNEL_OBJ)
 	$(CC) -ffreestanding -nostdlib -o $@ -T kernel/linker.ld ${KERNEL_OBJ} -lgcc
 	i686-elf-objcopy --only-keep-debug kernel/kernel.elf kernel/kernel.dbg
