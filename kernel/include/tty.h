@@ -1,5 +1,5 @@
-#ifndef X86_TTY_H
-#define X86_TTY_H
+#ifndef TTY_H
+#define TTY_H
 
 #include <stdint.h>
 
@@ -27,4 +27,5 @@ extern void kprintb(const uint8_t byte);
 extern void kprintw(const uint16_t word);
 extern void kprintd(const uint32_t dword);
 extern void kprintq(const uint64_t qword);
+extern int kprintdec(uint32_t num, uint8_t color);
 #endif

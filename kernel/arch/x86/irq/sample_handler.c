@@ -3,6 +3,7 @@
 #include <io.h>
 #include <stdint.h>
 #include <mm/paging.h>
+#include <panic.h>
 
 typedef uint32_t uword_t;
 
@@ -36,7 +37,7 @@ void pf_handler(struct fault_frame *frame)
 	int address;
 	struct pf_errcode errcode = frame->error_code;
 	asm ("mov %%cr2, %0": "=a" (address));
-	kprint("A page fault occurred!\n", VGA_COLOR_DARK_RED);
+	kprint("A page fault occurred!\n", VGA_COLOR_BRIGHT_RED);
 	kprint("Faulting address: ", 0);
 	kprintd(address);
 	kprint("\n", 0);
@@ -51,18 +52,12 @@ void pf_handler(struct fault_frame *frame)
 	if (errcode.id) {
 		kprint("Fault occurred while fetching instruction\n", 0);
 	}
-	asm("cli");
-halt:
-	asm("hlt");
-	goto halt;
+	PANIC("page fault");
 }
 
 __attribute__((interrupt))
 void double_fault(struct abort_frame *frame)
 {
-	*(volatile uint32_t *) (0xb8000) = 0xcf28cf3a;
-halt:
-	asm volatile ("cli; hlt");
-	goto halt;
+	PANIC("double fault");
 }
 

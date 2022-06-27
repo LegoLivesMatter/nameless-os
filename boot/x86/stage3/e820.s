@@ -1,6 +1,7 @@
 ; Code for getting the BIOS E820 memory map
 
 bits 16
+section .text
 
 ; Return: ECX - number of entries, DI - pointer to map
 get_e820_map:
@@ -61,5 +62,6 @@ get_e820_map:
 		hlt
 		jmp $-1
 
+section .rodata
 no_e820: db "BIOS does not support E820, cannot proceed!", 0xd, 0xa, 0
 e820_unexpected: db "Unexpected value in EAX after getting map entry: expected SMAP, got ", 0

@@ -1,7 +1,9 @@
 bits 16
 cpu 686
-org 0x1800
 
+extern run_kernel
+
+section .text
 %include "../fat32/fat32-structs.s"
 
 %macro print 1
@@ -11,7 +13,11 @@ org 0x1800
 	pop si
 %endmacro
 
+extern __STACK_BOTTOM__
+
+global _start
 _start:
+	mov sp, __STACK_BOTTOM__
 	mov [BOOT_DRIVE], dl
 	call enable_unreal
 	print begin
@@ -55,9 +61,11 @@ _start:
 	pop si
 	pop cx
 	print kernel_found
+	mov eax, [es:di+dir_entry.filesize]
+	mov [KERNEL_SIZE], eax
 	mov ax, [es:di+dir_entry.firstclushi]
 	shl eax, 16
-	mov ax, [es:di+(dir_entry.firstcluslo)]
+	mov ax, [es:di+dir_entry.firstcluslo]
 	call print_dword
 	mov edi, 0x100000
 	print kernel_loading
@@ -65,6 +73,11 @@ _start:
 	print kernel_loaded
 	
 	call get_e820_map
+	mov ebx, ecx
+	mov eax, 24
+	mul ecx
+	add eax, 20
+	sub sp, ax
 
 	cli
 	lgdt [gdt]
@@ -147,7 +160,6 @@ memcpy:
 	pop esi
 	ret
 
-
 %include "unreal.s"
 %include "a20.s"
 %include "../fat32/fat32.s"
@@ -155,8 +167,9 @@ memcpy:
 %include "print.s"
 %include "e820.s"
 
-in_protected:
 bits 32
+section .text
+in_protected:
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
@@ -164,13 +177,18 @@ bits 32
 	mov fs, ax
 	mov gs, ax
 
-	call load_paging_structs
-	call enable_paging
+	push dword [KERNEL_SIZE]
+	push 0x100000
+	push ebx
+	push edi
+	call run_kernel
 
-	jmp 0x8:0xc0000000
-	nop
+section .bss
+KERNEL_SIZE: resd 1
 
-kernel_name: db "KERNEL  BIN"
+section .rodata
+
+kernel_name: db "KERNEL  ELF"
 begin: db "Nameless Bootloader revision ", GIT_REVISION, 0xd, 0xa, 0
 a20_enabled: db "A20 has been enabled", 0xd, 0xa, "Searching for kernel...", 0xd, 0xa, 0
 a20_fail: db "Failed to enable A20, giving up!", 0xd, 0xa, 0
@@ -178,7 +196,7 @@ crit_err: db "A critical error occurred, dumping registers now: ", 0xd, 0xa, 0
 kernel_found: db "Found kernel at cluster ", 0
 kernel_loading: db 0xd, 0xa, "Loading kernel...", 0xd, 0xa, 0
 kernel_loaded: db "Kernel successfully loaded.", 0xd, 0xa, "Setting up kernel environment and running kernel...", 0xd, 0xa, 0
-missing_kernel: db "Could not find KERNEL.BIN", 0xd, 0xa, 0
+missing_kernel: db "Could not find KERNEL.ELF", 0xd, 0xa, 0
 eax_s: db "EAX: ", 0
 ebx_s: db "EBX: ", 0
 ecx_s: db "ECX: ", 0

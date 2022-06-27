@@ -1,5 +1,8 @@
 ; Routine for enabling unreal mode, which allows using 32-bit offsets in real mode
 
+bits 16
+section .text
+
 enable_unreal:
 	cli
 	push eax
@@ -24,6 +27,8 @@ enable_unreal:
 	pop eax
 	sti
 	ret
+
+section .rodata
 
 ; GDT with 1 flat data segment descriptor
 gdt_info:

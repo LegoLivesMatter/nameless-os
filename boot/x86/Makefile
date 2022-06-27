@@ -1,4 +1,10 @@
-default: mbr vbr-fat32 stage3/LOADER.BIN
+default: mbr vbr-fat32 stage3/LOADER.BIN stage3/loader.elf
+
+CFLAGS=-g -ffreestanding -Istage3
+LD=i686-elf-gcc
+LDFLAGS=-T stage3/stage3.ld -ffreestanding -nostdlib -g
+
+STAGE3_OBJ=stage3/loader.o stage3/paging.o stage3/elf.o stage3/prekernel.o
 
 mbr: mbr.s
 	$(AS) $(ASFLAGS) -w-zeroing -o $@ $<
@@ -6,10 +12,16 @@ mbr: mbr.s
 vbr-fat32: vbr-fat32.s fat32/*.s
 	$(AS) $(ASFLAGS) -o $@ $<
 
-stage3/LOADER.BIN: stage3/loader.s stage3/*.s
-	$(AS) $(ASFLAGS) -DGIT_REVISION=\"$(GIT_REV)\" -o $@ $<
+stage3/loader.elf: $(STAGE3_OBJ)
+	$(CC) $(LDFLAGS) -o $@ $^ -lgcc -Wl,--oformat=elf32-i386
+
+stage3/LOADER.BIN: $(STAGE3_OBJ)
+	$(CC) $(LDFLAGS) -o $@ $^ -lgcc
+
+stage3/loader.o: stage3/loader.s stage3/*.s
+	$(AS) $(ASFLAGS) -f elf -g dwarf2 -DGIT_REVISION=\"$(GIT_REV)\" -o $@ $<
 
 clean:
-	-rm mbr vbr-fat32 stage3/LOADER.BIN disk.img
+	-rm mbr vbr-fat32 stage3/LOADER.BIN stage3/loader.elf $(STAGE3_OBJ) disk.img
 
 .PHONY : default clean
