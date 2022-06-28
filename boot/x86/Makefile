@@ -1,27 +1,19 @@
-default: mbr vbr-fat32 stage3/LOADER.BIN stage3/loader.elf
+BOOTLOADER_OBJ = mbr vbr-fat32
+ASFLAGS_BASE = -w-zeroing
 
-CFLAGS=-g -ffreestanding -Istage3
-LD=i686-elf-gcc
-LDFLAGS=-T stage3/stage3.ld -ffreestanding -nostdlib -g
+default: $(BOOTLOADER_OBJ) stage3
 
-STAGE3_OBJ=stage3/loader.o stage3/paging.o stage3/elf.o stage3/prekernel.o
-
-mbr: mbr.s
-	$(AS) $(ASFLAGS) -w-zeroing -o $@ $<
+stage3:
+	$(MAKE) -C stage3
 
 vbr-fat32: vbr-fat32.s fat32/*.s
-	$(AS) $(ASFLAGS) -o $@ $<
-
-stage3/loader.elf: $(STAGE3_OBJ)
-	$(CC) $(LDFLAGS) -o $@ $^ -lgcc -Wl,--oformat=elf32-i386
-
-stage3/LOADER.BIN: $(STAGE3_OBJ)
-	$(CC) $(LDFLAGS) -o $@ $^ -lgcc
-
-stage3/loader.o: stage3/loader.s stage3/*.s
-	$(AS) $(ASFLAGS) -f elf -g dwarf2 -DGIT_REVISION=\"$(GIT_REV)\" -o $@ $<
 
 clean:
-	-rm mbr vbr-fat32 stage3/LOADER.BIN stage3/loader.elf $(STAGE3_OBJ) disk.img
+	-rm mbr vbr-fat32 disk.img
+	$(MAKE) -C stage3 clean
 
-.PHONY : default clean
+# Implicit rules
+%: %.s
+	$(AS) $(ASFLAGS_BASE) -f bin $< -o $@
+
+.PHONY : default clean stage3

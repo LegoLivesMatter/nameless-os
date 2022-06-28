@@ -1,7 +1,7 @@
 /* Code for parsing ELF binaries (the kernel) */
 
-#include <elf.h>
-#include <paging.h>
+#include "elf.h"
+#include "paging.h"
 #include <stdint.h>
 
 int check_elf_header(struct elf_header *header)

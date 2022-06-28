@@ -7,7 +7,7 @@ SECTIONS
 
 	.text : AT(ADDR(.text) - 0xbff00000) ALIGN(4K) {
 		__TEXT_BASE__ = .;
-		kernel/entry.o (.text)
+		entry.o (.text)
 		*(.text)
 		__TEXT_END__ = .;
 	}

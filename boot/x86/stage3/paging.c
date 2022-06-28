@@ -1,7 +1,7 @@
 /* Code for enabling paging */
 
 #include <stdint.h>
-#include <paging.h>
+#include "paging.h"
 
 /* Preallocated page tables. */
 static uint32_t page_directory[1024] __attribute__((aligned(4096))) __attribute__((section(".data")));

@@ -1,5 +1,5 @@
-#include <elf.h>
-#include <paging.h>
+#include "elf.h"
+#include "paging.h"
 
 /* This bit of code will be run right after the segment registers have been set
  * up for protected mode. */

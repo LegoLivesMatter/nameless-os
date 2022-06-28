@@ -1,36 +1,22 @@
 export AS = yasm
-ASFLAGS = -g dwarf2 -f elf
 export CC = i686-elf-gcc
-QEMU = qemu-system-i386 -monitor stdio
-
+export QEMU = qemu-system-i386 -monitor stdio
 export GIT_REV = $(shell git describe --long HEAD)
-
-CFLAGS = -g -fgnu89-inline -Ikernel/include -Ikernel/include/arch/x86 -ffreestanding -DGIT_COMMIT=\"$(GIT_REV)\"
-
-KERNEL_OBJ = kernel/entry.o kernel/arch/x86/halt.o kernel/arch/x86/tty/tty.o kernel/drivers/irq/i8259a.o kernel/arch/x86/irq/idt.o kernel/arch/x86/irq/interrupt.o kernel/arch/x86/irq/stub.o kernel/kernel.o
-
-BOOTLOADER_OBJ = boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN boot/x86/stage3/loader.elf
+MAKEFLAGS += -rR
 
 default: kernel/kernel.elf bootloader
-
 all: default boot/x86/disk.img
-
-bootloader: $(BOOTLOADER_OBJ)
-
 run: all
 	$(QEMU) boot/x86/disk.img
-
 debug: all
 	$(QEMU) -s -S boot/x86/disk.img
 
-boot/x86/mbr: boot/x86/mbr.s
-boot/x86/vbr-fat32: boot/x86/vbr-fat32.s boot/x86/fat32/*.s 
-boot/x86/stage3/LOADER.BIN: boot/x86/stage3/*.s boot/x86/stage3/*.c boot/x86/fat32/*.s boot/x86/stage3/stage3.ld
-boot/x86/stage3/loader.elf: boot/x86/stage3/*.s boot/x86/stage3/*.c boot/x86/fat32/*.s boot/x86/stage3/stage3.ld
-$(BOOTLOADER_OBJ):
+kernel/kernel.elf:
+	$(MAKE) -C kernel
+bootloader:
 	$(MAKE) -C boot/x86
 
-boot/x86/disk.img: boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN boot/x86/disk.dump kernel/kernel.elf
+boot/x86/disk.img: bootloader boot/x86/disk.dump kernel/kernel.elf
 	truncate -s1G boot/x86/disk.img
 	sfdisk boot/x86/disk.img < boot/x86/disk.dump
 	mkfs.fat -F 32 --offset 2048 boot/x86/disk.img
@@ -39,14 +25,11 @@ boot/x86/disk.img: boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN bo
 	mcopy -i boot/x86/disk.img@@1M boot/x86/stage3/LOADER.BIN ::.
 	mcopy -i boot/x86/disk.img@@1M kernel/kernel.elf ::./KERNEL.ELF
 
-kernel/kernel.elf: $(KERNEL_OBJ)
-	$(CC) -ffreestanding -nostdlib -o $@ -T kernel/linker.ld ${KERNEL_OBJ} -lgcc
-	i686-elf-objcopy --only-keep-debug kernel/kernel.elf kernel/kernel.dbg
-	i686-elf-objcopy --add-gnu-debuglink=kernel/kernel.dbg kernel/kernel.elf
-	i686-elf-strip --strip-unneeded kernel/kernel.elf
-
 clean:
-	-rm kernel/kernel.{dbg,elf} ${KERNEL_OBJ}
-	cd boot/x86 && $(MAKE) clean
+	$(MAKE) -C boot/x86 clean
+	$(MAKE) -C kernel clean
 
-.PHONY: default all clean run debug bootloader
+# Even though kernel.elf is a real target, it's considered phony so that the
+# kernel Makefile is always run. We don't check is the kernel binary up-to-date
+# here because we want to be more recursive.
+.PHONY: default all clean run debug bootloader kernel/kernel.elf
