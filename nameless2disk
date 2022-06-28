@@ -3,6 +3,14 @@
 
 BINARIES=( boot/x86/mbr boot/x86/vbr-fat32 boot/x86/stage3/LOADER.BIN kernel/kernel.elf )
 
+check_root() {
+	local user=$(whoami)
+	if [ $user != "root" ]; then
+		echo nameless2disk needs to be run as root!
+		exit 1
+	fi
+}
+
 check_binaries() {
 	for i in "${BINARIES[@]}"; do
 		if ! [ -e $i ]; then
@@ -91,6 +99,9 @@ install_blkdev() {
 # Check if all the required tools are installed.
 [ -z $(command -v fdisk) ] && echo fdisk not found, is util-linux installed? && exit 127
 [ -z $(command -v mkfs.fat) ] && echo mkfs.fat not found, is dosfstools installed? && exit 127
+
+# Check for root privileges.
+check_root
 
 # Make sure that Nameless has been compiled.
 check_binaries
