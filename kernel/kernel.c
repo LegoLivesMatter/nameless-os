@@ -5,6 +5,7 @@
 #include <irq/i8259a.h>
 #include <stdint.h>
 #include <mm/paging.h>
+#include <panic.h>
 
 struct idt_descriptor idt[256] __attribute__((aligned(0x10)));
 struct idtr idtr __attribute__((aligned(0x10)));
@@ -37,43 +38,38 @@ void print_e820(struct e820_map *mmap, int mmap_size)
 /* Small handler for double faults. Will be put elsewhere eventually. */
 int double_fault_handler(struct interrupt_frame *frame)
 {
-	kprint("PANIC: Double fault occurred!\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EAX: ", VGA_COLOR_BRIGHT_RED);
+	kprint("Double fault occurred!\n", VGA_COLOR_BRIGHT_RED);
+	kprint("EAX: ", 0);
 	kprintd(frame->eax);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EBX: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("EBX: ", 0);
 	kprintd(frame->ebx);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("ECX: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("ECX: ", 0);
 	kprintd(frame->ecx);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EDX: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("EDX: ", 0);
 	kprintd(frame->edx);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EBP: ", VGA_COLOR_BRIGHT_RED);
+	kprintc('\n', 0);
+	kprint("EBP: ", 0);
 	kprintd(frame->ebp);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("ESP: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("ESP: ", 0);
 	kprintd(frame->esp);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("ESI: ", VGA_COLOR_BRIGHT_RED);
+	kprintc('\n', 0);
+	kprint("ESI: ", 0);
 	kprintd(frame->esi);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EDI: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("EDI: ", 0);
 	kprintd(frame->edi);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EIP: ", VGA_COLOR_BRIGHT_RED);
+	kprintc('\n', 0);
+	kprint("EIP: ", 0);
 	kprintd(frame->eip);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EFLAGS: ", VGA_COLOR_BRIGHT_RED);
+	kprintc(' ', 0);
+	kprint("EFLAGS: ", 0);
 	kprintd(frame->eflags);
-	kprint("\n", VGA_COLOR_BRIGHT_RED);
-
-	/* IF has already been cleared for us */
-	asm("cli");
-halt:
-	asm("hlt");
-	goto halt;
+	kprintc('\n', 0);
+	PANIC("double fault");
 }
 
 void kmain(struct e820_map *mmap, int mmap_size)
