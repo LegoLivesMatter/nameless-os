@@ -5,13 +5,13 @@ SECTIONS
 	. = 0xc0000000;
 	__KERNEL_BASE__ = .;
 
-	.text : AT(ADDR(.text) - 0xbff00000) ALIGN(4K) {
+	.text : ALIGN(4K) {
 		__TEXT_BASE__ = .;
 		entry.o (.text)
 		*(.text)
 		__TEXT_END__ = .;
 	}
-	.rodata : AT(ADDR(.rodata) - 0xbff00000) ALIGN(4K) {
+	.rodata : ALIGN(4K) {
 		__RODATA_BASE__ = .;
 		*(.rodata)
 		__RODATA_END__ = .;
@@ -26,12 +26,12 @@ SECTIONS
 	 * matter yet because we (currently) assume that the NX bit is not
 	 * supported anyway. */
 
-	.data : AT(ADDR(.data) - 0xbff00000) ALIGN(4K) {
+	.data : ALIGN(4K) {
 		__DATA_BASE__ = .;
 		*(.data)
 		__DATA_END__ = .;
 	}
-	.bss : AT(ADDR(.bss) - 0xbff00000) ALIGN(4K) {
+	.bss : ALIGN(4K) {
 		__BSS_BASE__ = .;
 		*(.bss)
 		/* Reserving 16KiB for the stack. A __STACK_TOP__ is not really
