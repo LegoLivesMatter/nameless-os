@@ -23,9 +23,9 @@
 extern void screen_clear(void);
 extern void kprint(const char *string, uint8_t color);
 extern void kprintc(const char character, uint8_t color);
-extern void kprintb(const uint8_t byte);
-extern void kprintw(const uint16_t word);
-extern void kprintd(const uint32_t dword);
-extern void kprintq(const uint64_t qword);
+extern void kprintb(uint8_t byte, int print_delm);
+extern void kprintw(uint16_t word, int print_delm);
+extern void kprintd(uint32_t dword, int print_delm);
+extern void kprintq(uint64_t qword, int print_delm);
 extern int kprintdec(uint32_t num, uint8_t color);
 #endif

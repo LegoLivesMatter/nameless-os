@@ -12,13 +12,13 @@ void int_handler(struct interrupt_frame *frame)
 	int interrupt = frame->interrupt;
 	if (int_handler_table[interrupt] == NULL) {
 		kprint("WARNING: Unhandled interrupt ", 0);
-		kprintb(interrupt);
+		kprintb(interrupt, 1);
 		kprint(" occurred!\n", 0);
 	} else {
 		int ret = (*int_handler_table[interrupt])(frame);
 		if (ret) {
 			kprint("WARNING: Error while handling interrupt ", 0);
-			kprintb(interrupt);
+			kprintb(interrupt, 1);
 			kprint("!\n", 0);
 		}
 	}

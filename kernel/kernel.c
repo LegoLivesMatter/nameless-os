@@ -23,13 +23,13 @@ void print_e820(struct e820_map *mmap, int mmap_size)
 	kprint("       Base       |      Length      |   Type   |  Attrib  |\n", 0);
 	kprint("------------------------------------------------------------\n", 0);
 	for (int i=0; i<mmap_size; i++) {
-		kprintq(mmap[i].base);
+		kprintq(mmap[i].base, 1);
 		kprintc('|', 0);
-		kprintq(mmap[i].length);
+		kprintq(mmap[i].length, 1);
 		kprintc('|', 0);
-		kprintd(mmap[i].type);
+		kprintd(mmap[i].type, 1);
 		kprintc('|', 0);
-		kprintd(mmap[i].attrib);
+		kprintd(mmap[i].attrib, 1);
 		kprintc('|', 0);
 		kprintc('\n', 0);
 	}
@@ -40,34 +40,34 @@ int double_fault_handler(struct interrupt_frame *frame)
 {
 	kprint("Double fault occurred!\n", VGA_COLOR_BRIGHT_RED);
 	kprint("EAX: ", 0);
-	kprintd(frame->eax);
+	kprintd(frame->eax, 1);
 	kprintc(' ', 0);
 	kprint("EBX: ", 0);
-	kprintd(frame->ebx);
+	kprintd(frame->ebx, 1);
 	kprintc(' ', 0);
 	kprint("ECX: ", 0);
-	kprintd(frame->ecx);
+	kprintd(frame->ecx, 1);
 	kprintc(' ', 0);
 	kprint("EDX: ", 0);
-	kprintd(frame->edx);
+	kprintd(frame->edx, 1);
 	kprintc('\n', 0);
 	kprint("EBP: ", 0);
-	kprintd(frame->ebp);
+	kprintd(frame->ebp, 1);
 	kprintc(' ', 0);
 	kprint("ESP: ", 0);
-	kprintd(frame->esp);
+	kprintd(frame->esp, 1);
 	kprintc('\n', 0);
 	kprint("ESI: ", 0);
-	kprintd(frame->esi);
+	kprintd(frame->esi, 1);
 	kprintc(' ', 0);
 	kprint("EDI: ", 0);
-	kprintd(frame->edi);
+	kprintd(frame->edi, 1);
 	kprintc('\n', 0);
 	kprint("EIP: ", 0);
-	kprintd(frame->eip);
+	kprintd(frame->eip, 1);
 	kprintc(' ', 0);
 	kprint("EFLAGS: ", 0);
-	kprintd(frame->eflags);
+	kprintd(frame->eflags, 1);
 	kprintc('\n', 0);
 	PANIC("double fault");
 }
