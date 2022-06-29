@@ -4,8 +4,10 @@ include drivers/Makefile
 include arch/x86/Makefile
 
 ASFLAGS_BASE = -f elf -g dwarf2
-CFLAGS_BASE = -fgnu89-inline -ffreestanding -nostdlib -Iinclude -Iinclude/arch/x86 -g -DGIT_COMMIT=\"$(GIT_REV)\"
-LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g
+CFLAGS_BASE = -fgnu89-inline -ffreestanding -nostdlib -Iinclude \
+	      -Iinclude/arch/x86 -g -DGIT_COMMIT=\"$(GIT_REV)\" \
+	      -O2 -flto
+LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g -flto
 
 kernel.elf kernel.dbg: $(KERNEL_OBJ)
 	$(CC) $(LDFLAGS_BASE) $(LDFLAGS) -T linker.ld $^ -o $@
