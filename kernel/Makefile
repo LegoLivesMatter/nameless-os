@@ -10,17 +10,17 @@ CFLAGS_BASE = -fgnu89-inline -ffreestanding -nostdlib -Iinclude \
 LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g -flto
 
 kernel.elf kernel.dbg: $(KERNEL_OBJ)
-	$(CC) $(LDFLAGS_BASE) $(LDFLAGS) -T linker.ld $^ -o $@
-	i686-elf-objcopy --only-keep-debug kernel.elf kernel.dbg
-	i686-elf-objcopy --add-gnu-debuglink=kernel.dbg kernel.elf
-	i686-elf-strip --strip-unneeded kernel.elf
+	$(REAL_CC) $(LDFLAGS_BASE) $(LDFLAGS) -T linker.ld $^ -o $@
+	$(CROSS_COMPILE)objcopy --only-keep-debug kernel.elf kernel.dbg
+	$(CROSS_COMPILE)objcopy --add-gnu-debuglink=kernel.dbg kernel.elf
+	$(CROSS_COMPILE)strip --strip-unneeded kernel.elf
 
 clean:
 	-rm $(KERNEL_OBJ) kernel.elf kernel.dbg
 
 # Implicit rules
 %.o: %.c
-	$(CC) $(CFLAGS_BASE) $(CFLAGS) -c $< -o $@
+	$(REAL_CC) $(CFLAGS_BASE) $(CFLAGS) -c $< -o $@
 
 %.o: %.s
 	$(AS) $(ASFLAGS_BASE) $(ASFLAGS) $< -o $@

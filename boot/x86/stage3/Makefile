@@ -8,14 +8,14 @@ LDFLAGS_BASE = -ffreestanding -nostdlib -g -lgcc -T stage3.ld -flto
 default: LOADER.BIN loader.elf
 
 loader.elf: $(STAGE3_OBJ)
-	$(CC) $(LDFLAGS_BASE) $(LDFLAGS) -Wl,--oformat=elf32-i386 $^ -o $@
+	$(REAL_CC) $(LDFLAGS_BASE) $(LDFLAGS) -Wl,--oformat=elf32-i386 $^ -o $@
 
 LOADER.BIN: $(STAGE3_OBJ)
-	$(CC) $(LDFLAGS_BASE) $(LDFLAGS) $^ -o $@
+	$(REAL_CC) $(LDFLAGS_BASE) $(LDFLAGS) $^ -o $@
 
 # Implicit rules
 %.o: %.c
-	$(CC) $(CFLAGS_BASE) $(CFLAGS) -c $< -o $@
+	$(REAL_CC) $(CFLAGS_BASE) $(CFLAGS) -c $< -o $@
 
 %.o: %.s
 	$(AS) $(ASFLAGS_BASE) $(ASFLAGS) $< -o $@

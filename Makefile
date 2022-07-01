@@ -1,7 +1,9 @@
+export CROSS_COMPILE = i686-elf-
 export AS = yasm
-export CC = i686-elf-gcc
+export CC = gcc
 export QEMU = qemu-system-i386 -monitor stdio
 export GIT_REV = $(shell git describe --long HEAD)
+export REAL_CC = $(CROSS_COMPILE)$(CC)
 MAKEFLAGS += -rR
 
 default: kernel/kernel.elf bootloader
