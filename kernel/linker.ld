@@ -7,7 +7,6 @@ SECTIONS
 
 	.text : ALIGN(4K) {
 		__TEXT_BASE__ = .;
-		entry.o (.text)
 		*(.text)
 		__TEXT_END__ = .;
 	}
