@@ -1,16 +1,15 @@
-KERNEL_OBJ = kernel.o entry.o
-
-include drivers/Makefile
 include arch/x86/Makefile
+include drivers/Makefile
+include kernel/Makefile
 
 ASFLAGS_BASE = -f elf -g dwarf2
 CFLAGS_BASE = -fgnu89-inline -ffreestanding -nostdlib -Iinclude \
 	      -Iinclude/arch/x86 -g -DGIT_COMMIT=\"$(GIT_REV)\" \
 	      -O2 -flto
-LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g -flto
+LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g -flto -T arch/x86/linker.ld
 
 kernel.elf kernel.dbg: $(KERNEL_OBJ)
-	$(REAL_CC) $(LDFLAGS_BASE) $(LDFLAGS) -T linker.ld $^ -o $@
+	$(REAL_CC) $(LDFLAGS_BASE) $(LDFLAGS) $^ -o $@
 	$(CROSS_COMPILE)objcopy --only-keep-debug kernel.elf kernel.dbg
 	$(CROSS_COMPILE)objcopy --add-gnu-debuglink=kernel.dbg kernel.elf
 	$(CROSS_COMPILE)strip --strip-unneeded kernel.elf
