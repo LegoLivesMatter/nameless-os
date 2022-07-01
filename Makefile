@@ -4,6 +4,9 @@ export CC = gcc
 export QEMU = qemu-system-i386 -monitor stdio
 export GIT_REV = $(shell git describe --long HEAD)
 export REAL_CC = $(CROSS_COMPILE)$(CC)
+export CFLAGS
+export LDFLAGS
+export ASFLAGS
 MAKEFLAGS += -rR
 
 default: kernel/kernel.elf bootloader

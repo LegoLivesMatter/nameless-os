@@ -14,6 +14,6 @@ clean:
 
 # Implicit rules
 %: %.s
-	$(AS) $(ASFLAGS_BASE) -f bin $< -o $@
+	$(AS) $(ASFLAGS_BASE) $(ASFLAGS) -f bin $< -o $@
 
 .PHONY : default clean stage3
