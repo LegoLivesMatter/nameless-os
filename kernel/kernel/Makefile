@@ -1,1 +1,1 @@
-KERNEL_OBJ += kernel/kernel.o
+KERNEL_OBJ += $(addprefix kernel/, kernel.o kprint.o)

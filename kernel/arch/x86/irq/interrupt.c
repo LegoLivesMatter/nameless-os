@@ -1,6 +1,6 @@
 #include <irq/idt.h>
 #include <irq/interrupt.h>
-#include <tty.h>
+#include <kprint.h>
 #include <stddef.h>
 #include <irq/i8259a.h>
 
@@ -11,15 +11,15 @@ void int_handler(struct interrupt_frame *frame)
 {
 	int interrupt = frame->interrupt;
 	if (int_handler_table[interrupt] == NULL) {
-		kprint("WARNING: Unhandled interrupt ", 0);
+		kprint("WARNING: Unhandled interrupt ", VGA_YELLOW, VGA_BLACK);
 		kprintb(interrupt, 1);
-		kprint(" occurred!\n", 0);
+		kprint(" occurred!\n", VGA_YELLOW, VGA_BLACK);
 	} else {
 		int ret = (*int_handler_table[interrupt])(frame);
 		if (ret) {
-			kprint("WARNING: Error while handling interrupt ", 0);
+			kprint("WARNING: Error while handling interrupt ", VGA_YELLOW, VGA_BLACK);
 			kprintb(interrupt, 1);
-			kprint("!\n", 0);
+			kprint("!\n", VGA_YELLOW, VGA_BLACK);
 		}
 	}
 	if (interrupt >= 0x20) {

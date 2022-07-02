@@ -4,15 +4,15 @@
 extern void halt();
 
 #define PANIC(msg) \
-	kprint("PANIC (", VGA_COLOR_BRIGHT_RED);\
-	kprint(msg, VGA_COLOR_BRIGHT_RED);\
-	kprint(") in ", VGA_COLOR_BRIGHT_RED);\
-	kprint(__FILE__, VGA_COLOR_BRIGHT_RED);\
-	kprintc(':', VGA_COLOR_BRIGHT_RED);\
-	kprintdec(__LINE__, VGA_COLOR_BRIGHT_RED);\
-	kprintc(':', VGA_COLOR_BRIGHT_RED);\
-	kprint(__func__, VGA_COLOR_BRIGHT_RED);\
-	kprint("()", VGA_COLOR_BRIGHT_RED);\
+	kprint("PANIC (", VGA_BRIGHT_RED, VGA_BLACK);\
+	kprint(msg, VGA_BRIGHT_RED, VGA_BLACK);\
+	kprint(") in ", VGA_BRIGHT_RED, VGA_BLACK);\
+	kprint(__FILE__, VGA_BRIGHT_RED, VGA_BLACK);\
+	kprintc(':', VGA_BRIGHT_RED, VGA_BLACK);\
+	kprintdec(__LINE__, VGA_BRIGHT_RED, VGA_BLACK);\
+	kprintc(':', VGA_BRIGHT_RED, VGA_BLACK);\
+	kprint(__func__, VGA_BRIGHT_RED, VGA_BLACK);\
+	kprint("()", VGA_BRIGHT_RED, VGA_BLACK);\
 	halt();
 
 #endif

@@ -1,4 +1,4 @@
-#include <tty.h>
+#include <kprint.h>
 #include <io.h>
 #include <irq/idt.h>
 #include <irq/interrupt.h>
@@ -20,78 +20,78 @@ struct e820_map {
 
 void print_e820(struct e820_map *mmap, int mmap_size)
 {
-	kprint("       Base       |      Length      |   Type   |  Attrib  |\n", 0);
-	kprint("------------------------------------------------------------\n", 0);
+	kprint("       Base       |      Length      |   Type   |  Attrib  |\n", VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("------------------------------------------------------------\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	for (int i=0; i<mmap_size; i++) {
 		kprintq(mmap[i].base, 1);
-		kprintc('|', 0);
+		kprintc('|', VGA_LIGHT_GRAY, VGA_BLACK);
 		kprintq(mmap[i].length, 1);
-		kprintc('|', 0);
+		kprintc('|', VGA_LIGHT_GRAY, VGA_BLACK);
 		kprintd(mmap[i].type, 1);
-		kprintc('|', 0);
+		kprintc('|', VGA_LIGHT_GRAY, VGA_BLACK);
 		kprintd(mmap[i].attrib, 1);
-		kprintc('|', 0);
-		kprintc('\n', 0);
+		kprintc('|', VGA_LIGHT_GRAY, VGA_BLACK);
+		kprintc('\n', VGA_LIGHT_GRAY, VGA_BLACK);
 	}
 }
 
 /* Small handler for double faults. Will be put elsewhere eventually. */
 int double_fault_handler(struct interrupt_frame *frame)
 {
-	kprint("Double fault occurred!\n", VGA_COLOR_BRIGHT_RED);
-	kprint("EAX: ", 0);
+	kprint("Double fault occurred!\n", VGA_BRIGHT_RED, VGA_BLACK);
+	kprint("EAX: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->eax, 1);
-	kprintc(' ', 0);
-	kprint("EBX: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EBX: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->ebx, 1);
-	kprintc(' ', 0);
-	kprint("ECX: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("ECX: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->ecx, 1);
-	kprintc(' ', 0);
-	kprint("EDX: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EDX: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->edx, 1);
-	kprintc('\n', 0);
-	kprint("EBP: ", 0);
+	kprintc('\n', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EBP: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->ebp, 1);
-	kprintc(' ', 0);
-	kprint("ESP: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("ESP: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->esp, 1);
-	kprintc('\n', 0);
-	kprint("ESI: ", 0);
+	kprintc('\n', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("ESI: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->esi, 1);
-	kprintc(' ', 0);
-	kprint("EDI: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EDI: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->edi, 1);
-	kprintc('\n', 0);
-	kprint("EIP: ", 0);
+	kprintc('\n', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EIP: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->eip, 1);
-	kprintc(' ', 0);
-	kprint("EFLAGS: ", 0);
+	kprintc(' ', VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("EFLAGS: ", VGA_LIGHT_GRAY, VGA_BLACK);
 	kprintd(frame->eflags, 1);
-	kprintc('\n', 0);
+	kprintc('\n', VGA_LIGHT_GRAY, VGA_BLACK);
 	PANIC("double fault");
 }
 
 void kmain(struct e820_map *mmap, int mmap_size)
 {
-	screen_clear();
-	kprint("Welcome to Nameless OS!\nRunning revision: ", 0);
-	kprint(GIT_COMMIT, 0);
-	kprint("\n", 0);
-	kprint("BIOS memory map:\n", 0);
+	vga_initialize();
+	kprint("Welcome to Nameless OS!\nRunning revision: ", VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint(GIT_COMMIT, VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("\n", VGA_LIGHT_GRAY, VGA_BLACK);
+	kprint("BIOS memory map:\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	print_e820(mmap, mmap_size);
-	kprint("Preparing IDT...\n", 0);
+	kprint("Preparing IDT...\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	for (int i=0; i<48; i++) {
 		idt_set_descriptor(idt, i, 0x8, _int_handler_table[i], IDT_INTERRUPT_GATE, 0);
 	}
-	kprint("IDT prepared, loading...\n", 0);
+	kprint("IDT prepared, loading...\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	populate_idtr(&idtr, idt);
 	load_idt(idtr);
-	kprint("Setting up interrupts...\n", 0);
+	kprint("Setting up interrupts...\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	register_interrupt(8, &double_fault_handler);
 	pic_init(0x20, 0x28);
 	pic_mask_all();
 	asm volatile ("sti");
-	kprint("All done\n", 0);
+	kprint("All done\n", VGA_LIGHT_GRAY, VGA_BLACK);
 	while(1);
 }
