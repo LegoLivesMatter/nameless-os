@@ -5,7 +5,7 @@ include kernel/Makefile
 ASFLAGS_BASE = -f elf -g dwarf2
 CFLAGS_BASE = -fgnu89-inline -ffreestanding -nostdlib -Iinclude \
 	      -Iinclude/arch/x86 -g -DGIT_COMMIT=\"$(GIT_REV)\" \
-	      -O2 -flto
+	      -Og
 LDFLAGS_BASE = -ffreestanding -nostdlib -lgcc -g -flto -T arch/x86/linker.ld
 
 kernel.elf kernel.dbg: $(KERNEL_OBJ)

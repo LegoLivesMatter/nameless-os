@@ -2,7 +2,7 @@ STAGE3_OBJ = loader.o elf.o paging.o prekernel.o
 
 ASFLAGS_BASE = -f elf -g dwarf2 -DGIT_REVISION=\"$(GIT_REV)\"
 CFLAGS_BASE = -ffreestanding -nostdlib -DGIT_REVISION=\"$(GIT_REV)\" -g \
-	      -O2 -flto
+	      -Og
 LDFLAGS_BASE = -ffreestanding -nostdlib -g -lgcc -T stage3.ld -flto
 
 default: LOADER.BIN loader.elf
